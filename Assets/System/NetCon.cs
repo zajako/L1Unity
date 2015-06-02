@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Net;
 using System.Net.Sockets;
@@ -9,6 +10,9 @@ using System.IO;
 
 public class NetCon : MonoBehaviour {
 	public Rigidbody player;
+	public Text stuff;
+	public InputField inp;
+	public Scrollbar scrl;
 	NetworkStream stream;
 	string id;
 	System.Byte[] pckts;
@@ -19,6 +23,7 @@ public class NetCon : MonoBehaviour {
 	System.Byte[] snd_key;
 	
 	string charname;
+	int chat;
 	
 	int num_chars;
 	int chars_rcvd;
@@ -30,6 +35,8 @@ public class NetCon : MonoBehaviour {
 		has_key = false;
 		rcv_key = new System.Byte[8];
 		snd_key = new System.Byte[8];
+		chat = 0;
+		stuff.text = "Chat started: " + chat;
 	}
 	
 	public static string ByteArrayToString(byte[] ba, int packet_length)
@@ -92,7 +99,7 @@ public class NetCon : MonoBehaviour {
 	
 	void encrypt()
 	{
-		Debug.Log("Encryption key " + ByteArrayToString(snd_key, 8));
+		//Debug.Log("Encryption key " + ByteArrayToString(snd_key, 8));
 		if (packet_length != 0)
 		{
 			pckts[2] ^= snd_key[0];
@@ -152,10 +159,10 @@ public class NetCon : MonoBehaviour {
 		data[2] = pckts[4];
 		data[3] = pckts[5];
 		
-		Debug.Log("Sending packet " + ByteArrayToString(pckts, packet_length));
+		//Debug.Log("Sending packet " + ByteArrayToString(pckts, packet_length));
 		encrypt();
 		change_snd_key(data);
-		Debug.Log("Sending Epacket " + ByteArrayToString(pckts, packet_length));
+		//Debug.Log("Sending Epacket " + ByteArrayToString(pckts, packet_length));
 		stream.Write(pckts, 0, packet_length);
 	}
 	
@@ -221,12 +228,25 @@ public class NetCon : MonoBehaviour {
 		}
 	}
 	
+	public void chat_submit()
+	{
+		Debug.Log("Submitting chat");
+	}
+	
 	void process_packet_contents()
 	{
 		switch(pckts[0])
 		{
-			case 8: case 42: case 91: case 105: //chat packets
-				
+			case 18:	//disconnected by server
+				Debug.Log("Disconnected");
+				break;
+			case 8: 
+			case 42: 
+			case 91: 
+			case 105: //chat packets
+				chat++;
+				stuff.text += "Chat: " + chat;
+				scrl.value = 1;
 				break;			
 			case 10:	//server version
 				login_packet();
@@ -354,7 +374,6 @@ public class NetCon : MonoBehaviour {
 			{
 				pckt_offset = 0;
 				packet_length = (pckts[0] | pckts[1]<<8) - 2;
-				Debug.Log("Received packet length " + packet_length);
 				stream.BeginRead(pckts, 0, packet_length, 
 					new AsyncCallback(decrypt_packet_contents), stream);
 			}
