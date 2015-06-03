@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System;
 using System.IO;
 
@@ -15,9 +17,14 @@ public class NetCon : MonoBehaviour {
 	public Scrollbar scrl;
 	NetworkStream stream;
 	string id;
-	System.Byte[] pckts;
-	int pckt_offset;
-	int packet_length;
+	System.Byte[] rpckts;
+	int rpckt_offset;
+	int rpacket_length;
+	Mutex send_packets;
+	
+	System.Byte[] spckts;
+	int spckt_offset;
+	
 	bool has_key;
 	System.Byte[] rcv_key;
 	System.Byte[] snd_key;
@@ -30,13 +37,16 @@ public class NetCon : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Debug.Log("Starting EventListener");
-		pckt_offset = 0;
-		pckts = new System.Byte[65536];
+		rpckt_offset = 0;
+		rpckts = new System.Byte[65536];
+		spckts = new System.Byte[65536];
 		has_key = false;
 		rcv_key = new System.Byte[8];
 		snd_key = new System.Byte[8];
 		chat = 0;
 		stuff.text = "Chat started: " + chat;
+		scrl.value = 0;
+		send_packets = new Mutex();
 	}
 	
 	public static string ByteArrayToString(byte[] ba, int packet_length)
@@ -45,6 +55,69 @@ public class NetCon : MonoBehaviour {
 	  for (int i = 0; i < packet_length; i++)
 	    hex.AppendFormat("{0:x2} ", ba[i]);
 	  return hex.ToString();
+	}
+	
+	public void setsize()
+	{
+		if (spckt_offset >= 2)
+		{
+			spckts[0] = (byte)(spckt_offset&0xFF);
+			spckts[1] = (byte)((spckt_offset>>8)&0xFF);
+		}
+	}
+	
+	public void reset()
+	{
+		Debug.Log("Reset send buffer");
+		send_packets.WaitOne();
+		spckt_offset = 2;
+	}
+	
+	public void add(byte a)
+	{
+		spckts[spckt_offset] = a;
+		spckt_offset++;
+	}
+	
+	public void add(short a)
+	{
+		spckts[spckt_offset] = (byte)(a&0xFF);
+		spckts[spckt_offset+1] = (byte)((a>>8)&0xFF);
+		spckt_offset += 2;
+	}
+	
+	public void add(ushort a)
+	{
+		spckts[spckt_offset] = (byte)(a&0xFF);
+		spckts[spckt_offset+1] = (byte)((a>>8)&0xFF);
+		spckt_offset += 2;
+	}
+	
+	public void add(int a)
+	{
+		spckts[spckt_offset] = (byte)(a&0xFF);
+		spckts[spckt_offset+1] = (byte)((a>>8)&0xFF);
+		spckts[spckt_offset+2] = (byte)((a>>16)&0xFF);
+		spckts[spckt_offset+3] = (byte)((a>>24)&0xFF);
+		spckt_offset += 4;
+	}
+	
+	public void add(uint a)
+	{
+		spckts[spckt_offset] = (byte)(a&0xFF);
+		spckts[spckt_offset+1] = (byte)((a>>8)&0xFF);
+		spckts[spckt_offset+2] = (byte)((a>>16)&0xFF);
+		spckts[spckt_offset+3] = (byte)((a>>24)&0xFF);
+		spckt_offset += 4;
+	}
+	
+	public void add(string a)
+	{
+		for (int i = 0; i < a.Length; i++)
+			spckts[spckt_offset+i] = (byte)a[i];
+		spckt_offset += a.Length;
+		spckts[spckt_offset] = 0;
+		spckt_offset++;
 	}
 	
 	void init_key(uint seed)
@@ -74,24 +147,24 @@ public class NetCon : MonoBehaviour {
 	
 	void decrypt()
 	{
-		if (packet_length != 0)
+		if (rpacket_length != 0)
 		{
-			System.Byte b3 = pckts[3];
-			pckts[3] ^= rcv_key[2];
+			System.Byte b3 = rpckts[3];
+			rpckts[3] ^= rcv_key[2];
 	
-			System.Byte b2 = pckts[2];
-			pckts[2] ^= (System.Byte)(b3 ^ rcv_key[3]);
+			System.Byte b2 = rpckts[2];
+			rpckts[2] ^= (System.Byte)(b3 ^ rcv_key[3]);
 	
-			System.Byte b1 = pckts[1];
-			pckts[1] ^= (System.Byte)(b2 ^ rcv_key[4]);
+			System.Byte b1 = rpckts[1];
+			rpckts[1] ^= (System.Byte)(b2 ^ rcv_key[4]);
 	
-			System.Byte k = (System.Byte)(pckts[0] ^ b1 ^ rcv_key[5]);
-			pckts[0] = (System.Byte)(k ^ rcv_key[0]);
+			System.Byte k = (System.Byte)(rpckts[0] ^ b1 ^ rcv_key[5]);
+			rpckts[0] = (System.Byte)(k ^ rcv_key[0]);
 	
-			for (int i = 1; i < packet_length; i++) 
+			for (int i = 1; i < rpacket_length; i++) 
 			{
-				System.Byte t = pckts[i];
-				pckts[i] ^= (System.Byte)(rcv_key[i & 7] ^ k);
+				System.Byte t = rpckts[i];
+				rpckts[i] ^= (System.Byte)(rcv_key[i & 7] ^ k);
 				k = t;
 			}
 		}
@@ -100,18 +173,18 @@ public class NetCon : MonoBehaviour {
 	void encrypt()
 	{
 		//Debug.Log("Encryption key " + ByteArrayToString(snd_key, 8));
-		if (packet_length != 0)
+		if (spckt_offset != 0)
 		{
-			pckts[2] ^= snd_key[0];
+			spckts[2] ^= snd_key[0];
 			
-			for (int i = 3; i < packet_length; i++)
+			for (int i = 3; i < spckt_offset; i++)
 			{
-				pckts[i] ^= (byte)(snd_key[(i-2) & 7] ^ pckts[i-1]);
-			}	
-			pckts[5] ^= (byte)(snd_key[2]);
-			pckts[4] ^= (byte)(snd_key[3] ^ pckts[5]);
-			pckts[3] ^= (byte)(snd_key[4] ^ pckts[4]);
-			pckts[2] ^= (byte)(snd_key[5] ^ pckts[3]);
+				spckts[i] ^= (byte)(snd_key[(i-2) & 7] ^ spckts[i-1]);
+			}
+			spckts[5] ^= (byte)(snd_key[2]);
+			spckts[4] ^= (byte)(snd_key[3] ^ spckts[5]);
+			spckts[3] ^= (byte)(snd_key[4] ^ spckts[4]);
+			spckts[2] ^= (byte)(snd_key[5] ^ spckts[3]);
 		}
 	}
 	
@@ -153,74 +226,51 @@ public class NetCon : MonoBehaviour {
 	
 	void send_packet()
 	{
+		Debug.Log("SENDP");
 		System.Byte[] data = new System.Byte[4];
-		data[0] = pckts[2];
-		data[1] = pckts[3];
-		data[2] = pckts[4];
-		data[3] = pckts[5];
+		setsize();
+		data[0] = spckts[2];
+		data[1] = spckts[3];
+		data[2] = spckts[4];
+		data[3] = spckts[5];
 		
-		//Debug.Log("Sending packet " + ByteArrayToString(pckts, packet_length));
+		Debug.Log("Sending packet " + ByteArrayToString(spckts, spckt_offset));
 		encrypt();
 		change_snd_key(data);
-		//Debug.Log("Sending Epacket " + ByteArrayToString(pckts, packet_length));
-		stream.Write(pckts, 0, packet_length);
+		Debug.Log("Sending Epacket " + ByteArrayToString(spckts, spckt_offset));
+		stream.Write(spckts, 0, spckt_offset);
+		send_packets.ReleaseMutex();
+	}
+	
+	void cancel_packet()
+	{
+		send_packets.ReleaseMutex();
 	}
 	
 	void login_packet()
 	{
 		Debug.Log("Sending login data");
-		packet_length = 17;
-		pckts[0] = (byte)17;
-		pckts[1] = (byte)0;
-		pckts[2] = (byte)12;
-		pckts[3] = (byte)'s';
-		pckts[4] = (byte)'t';
-		pckts[5] = (byte)'u';
-		pckts[6] = (byte)'p';
-		pckts[7] = (byte)'i';
-		pckts[8] = (byte)'d';
-		pckts[9] = (byte)0;
-		pckts[10] = (byte)'s';
-		pckts[11] = (byte)'t';
-		pckts[12] = (byte)'u';
-		pckts[13] = (byte)'p';
-		pckts[14] = (byte)'i';
-		pckts[15] = (byte)'d';
-		pckts[16] = (byte)0;
+		reset();
+		add((byte)12);	//login packet
+		add("stupid");
+		add("stupid");
 		send_packet();
 	}
 	
 	void login_check()
 	{
-		switch (pckts[1])
+		switch (rpckts[1])
 		{
 			case 3:
-				packet_length = 11;
-				pckts[0] = 11;
-				pckts[1] = 0;
-				pckts[2] = 57;	//alive packet
-				pckts[3] = 0;
-				pckts[4] = 0;
-				pckts[5] = 0;
-				pckts[6] = 0;
-				pckts[7] = 0;
-				pckts[8] = 0;
-				pckts[9] = 0;
-				pckts[10] = 0;
+				reset();
+				add((byte)57);	//alive packet
+				add((int)0);
+				add((int)0);
 				send_packet();
-				packet_length = 12;
-				pckts[0] = 12;
-				pckts[1] = 0;
-				pckts[2] = 92;	//init game
-				pckts[3] = 0;
-				pckts[4] = 0;
-				pckts[5] = 0;
-				pckts[6] = 0;
-				pckts[7] = 0;
-				pckts[8] = 0;
-				pckts[9] = 0;
-				pckts[10] = 0;
-				pckts[11] = 0;
+				reset();
+				add((byte)92);	//init game
+				add((int)0);
+				add((int)0);
 				send_packet();
 				break;
 			default:
@@ -230,12 +280,25 @@ public class NetCon : MonoBehaviour {
 	
 	public void chat_submit()
 	{
-		Debug.Log("Submitting chat");
+		string temp = inp.text;
+		Debug.Log("Submitting chat " + inp.text);
+		switch('a')
+		{
+			default:
+				reset();
+				add((byte)104);	//client chat
+				add((byte)0);	//regular chat
+				add(temp);
+				send_packet();
+				break;
+		}
+		inp.text = "";
+		Debug.Log("Submitting chat " + temp);
 	}
 	
 	void process_packet_contents()
 	{
-		switch(pckts[0])
+		switch(rpckts[0])
 		{
 			case 18:	//disconnected by server
 				Debug.Log("Disconnected");
@@ -244,9 +307,11 @@ public class NetCon : MonoBehaviour {
 			case 42: 
 			case 91: 
 			case 105: //chat packets
+				Debug.Log("Chat packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
 				chat++;
-				stuff.text += "Chat: " + chat;
-				scrl.value = 1;
+				//stuff.text += "Chat: " + chat;
+				Debug.Log("Received chat " + chat);
+				//scrl.value = 0;
 				break;			
 			case 10:	//server version
 				login_packet();
@@ -255,104 +320,83 @@ public class NetCon : MonoBehaviour {
 				login_check();
 				break;
 			case 65:	//key packet
-				uint seed = ((uint)pckts[1]) |
-							((uint)pckts[2])<<8 |
-							((uint)pckts[3])<<16 |
-							((uint)pckts[4])<<24;
+				uint seed = ((uint)rpckts[1]) |
+							((uint)rpckts[2])<<8 |
+							((uint)rpckts[3])<<16 |
+							((uint)rpckts[4])<<24;
 				init_key(seed);
-				
-				pckts[0] = 14;
-				pckts[1] = 0;
-				pckts[2] = 71;
-				pckts[3] = 0x33;
-				pckts[4] = 0;
-				pckts[5] = 0xFF;
-				pckts[6] = 0xFF;
-				pckts[7] = 0xFF;
-				pckts[8] = 0xFF;
-				pckts[9] = 32;
-				pckts[10] = (101101)&0xFF;
-				pckts[11] = (101101)>>8&0xFF;
-				pckts[12] = (101101)>>16&0xFF;
-				pckts[13] = (101101)>>24&0xFF;
-				packet_length = 14;
-				//Debug.Log("Received encryption seed");
+				Debug.Log("Received encryption seed");
+				reset();
+				add((byte)71);
+				add((short)0x33);
+				add((int)-1);
+				add((byte)32);
+				add((int)101101);
 				send_packet();
 				break;
 			case 90:	//news packet
-				packet_length = 11;
-				pckts[0] = 11;
-				pckts[1] = 0;
-				pckts[2] = 43;	//client click packet
-				pckts[3] = 0;
-				pckts[4] = 0;
-				pckts[5] = 0;
-				pckts[6] = 0;
-				pckts[7] = 0;
-				pckts[8] = 0;
-				pckts[9] = 0;
-				pckts[10] = 0;
+				reset();
+				add((byte)43);	//client click packet
+				add((int)0);
+				add((int)0);
 				send_packet();
 				break;
 			case 113:	//num char packet
-				num_chars = pckts[1];
+				num_chars = rpckts[1];
 				chars_rcvd = 0;
 				Debug.Log(num_chars + " chars total");
 				break;
 			case 99:	//login char packet
 				int name_len = 0;
 				chars_rcvd++;
-				Debug.Log("Char info packet (" + pckts[0] + ") " + ByteArrayToString(pckts, packet_length));
+				Debug.Log("Char info packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
 				if (chars_rcvd == 1)
 				{
 					name_len = 0;
-					for (; pckts[name_len+1] != 0; name_len++);
+					for (; rpckts[name_len+1] != 0; name_len++);
 					Debug.Log("Char name length " + name_len);
-					charname = Encoding.UTF8.GetString(pckts, 1, name_len);
+					charname = Encoding.UTF8.GetString(rpckts, 1, name_len);
 				}
 				if (chars_rcvd == num_chars)
 				{
 					//send first character
 					Debug.Log("Logging in as ;" + charname + ";");
-					pckts[0] = (byte)(10+charname.Length);
-					pckts[1] = 0;
-					pckts[2] = 83;	//use char packet
-					for (int i = 0; i < charname.Length; i++)
-						pckts[3+i] = (byte)charname[i];
-					for (int i = 0; i < 8; i++)
-						pckts[3+charname.Length+i] = 0;
-					packet_length = 10+charname.Length;
+					reset();
+					add((byte)83);	//use char packet
+					add(charname);
+					add((int)0);
+					add((int)0);
 					send_packet();
 				}
 				break;
 			default:
-				Debug.Log("Unknown packet (" + pckts[0] + ") " + ByteArrayToString(pckts, packet_length));
+				Debug.Log("Unknown packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
 				break;
 		}
-		stream.BeginRead(pckts, 0, 2, new AsyncCallback(read_packet_contents), stream);
+		stream.BeginRead(rpckts, 0, 2, new AsyncCallback(read_packet_contents), stream);
 	}
 	
 	void decrypt_packet_contents(IAsyncResult rslt)
 	{
 		int rcvd = stream.EndRead(rslt);
-		pckt_offset += rcvd;
-		if (pckt_offset < packet_length)
+		rpckt_offset += rcvd;
+		if (rpckt_offset < rpacket_length)
 		{
-			stream.BeginRead(pckts, pckt_offset, packet_length-pckt_offset, 
+			stream.BeginRead(rpckts, rpckt_offset, rpacket_length-rpckt_offset, 
 				new AsyncCallback(decrypt_packet_contents), stream);
 		}
 		else
 		{
-			//Debug.Log(packet_length);
-			//Debug.Log("packet " + ByteArrayToString(pckts, packet_length));
+			//Debug.Log(rpacket_length);
+			//Debug.Log("packet " + ByteArrayToString(rpckts, rpacket_length));
 			if (has_key)
 			{
 				System.Byte[] data = new System.Byte[4];
 				decrypt();
-				data[0] = pckts[0];
-				data[1] = pckts[1];
-				data[2] = pckts[2];
-				data[3] = pckts[3];
+				data[0] = rpckts[0];
+				data[1] = rpckts[1];
+				data[2] = rpckts[2];
+				data[3] = rpckts[3];
 				change_rcv_key(data);
 			}
 			process_packet_contents();
@@ -366,15 +410,15 @@ public class NetCon : MonoBehaviour {
 			int rcvd = stream.EndRead(rslt);
 			if (rcvd < 2)
 			{
-				pckt_offset = rcvd;
-				stream.BeginRead(pckts, pckt_offset, 2-rcvd, 
+				rpckt_offset = rcvd;
+				stream.BeginRead(rpckts, rpckt_offset, 2-rcvd, 
 					new AsyncCallback(read_packet_contents), stream);
 			}
 			else
 			{
-				pckt_offset = 0;
-				packet_length = (pckts[0] | pckts[1]<<8) - 2;
-				stream.BeginRead(pckts, 0, packet_length, 
+				rpckt_offset = 0;
+				rpacket_length = (rpckts[0] | rpckts[1]<<8) - 2;
+				stream.BeginRead(rpckts, 0, rpacket_length, 
 					new AsyncCallback(decrypt_packet_contents), stream);
 			}
 		}
@@ -384,8 +428,8 @@ public class NetCon : MonoBehaviour {
 		Debug.Log("Connection");
 		TcpClient client = new TcpClient ("207.192.73.73", 2000);
 		stream = client.GetStream();
-		
-		stream.BeginRead(pckts, pckt_offset, 2, new AsyncCallback(read_packet_contents), stream);
+		Debug.Log("Connected");
+		stream.BeginRead(rpckts, rpckt_offset, 2, new AsyncCallback(read_packet_contents), stream);
 	}
 	
 	public void handleEvent(Vector3 position, Quaternion rotation){
