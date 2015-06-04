@@ -21,6 +21,7 @@ public class NetCon : MonoBehaviour {
 	int rpckt_offset;
 	int rpacket_length;
 	Mutex send_packets;
+	Mutex rcv_packets;
 	
 	System.Byte[] spckts;
 	int spckt_offset;
@@ -47,6 +48,7 @@ public class NetCon : MonoBehaviour {
 		stuff.text = "Chat started: " + chat;
 		scrl.value = 0;
 		send_packets = new Mutex();
+		rcv_packets = new Mutex(true);
 	}
 	
 	public static string ByteArrayToString(byte[] ba, int packet_length)
@@ -68,9 +70,61 @@ public class NetCon : MonoBehaviour {
 	
 	public void reset()
 	{
-		Debug.Log("Reset send buffer");
 		send_packets.WaitOne();
 		spckt_offset = 2;
+	}
+	
+	public byte get_byte()
+	{
+		return rpckts[rpckt_offset++];
+	}
+	
+	public short get_short()
+	{
+		short ret = 0;
+		ret = (short)(rpckts[rpckt_offset] |
+				rpckts[rpckt_offset+1]<<8);
+		rpckt_offset += 2;
+		return ret;
+	}
+	
+	public ushort get_ushort()
+	{
+		ushort ret = 0;
+		ret = (ushort)(rpckts[rpckt_offset] |
+				rpckts[rpckt_offset+1]<<8);
+		rpckt_offset += 2;
+		return ret;
+	}
+	
+	public int get_int()
+	{
+		int ret = 0;
+		ret = rpckts[rpckt_offset] |
+				rpckts[rpckt_offset+1]<<8 |
+				rpckts[rpckt_offset+2]<<16 |
+				rpckts[rpckt_offset+3]<<24;
+		rpckt_offset += 4;
+		return ret;
+	}
+	
+	public uint get_uint()
+	{
+		uint ret = 0;
+		ret = (uint)(rpckts[rpckt_offset] |
+				rpckts[rpckt_offset+1]<<8 |
+				rpckts[rpckt_offset+2]<<16 |
+				rpckts[rpckt_offset+3]<<24);
+		rpckt_offset += 4;
+		return ret;
+	}
+	
+	public string get_string()
+	{
+		int i;
+		for (i = 0; rpckts[i+rpckt_offset] != 0; i++);
+		rpckt_offset += i+1;
+		return Encoding.UTF8.GetString(rpckts, rpckt_offset-i-1, i);
 	}
 	
 	public void add(byte a)
@@ -226,7 +280,6 @@ public class NetCon : MonoBehaviour {
 	
 	void send_packet()
 	{
-		Debug.Log("SENDP");
 		System.Byte[] data = new System.Byte[4];
 		setsize();
 		data[0] = spckts[2];
@@ -234,10 +287,10 @@ public class NetCon : MonoBehaviour {
 		data[2] = spckts[4];
 		data[3] = spckts[5];
 		
-		Debug.Log("Sending packet " + ByteArrayToString(spckts, spckt_offset));
+		//Debug.Log("Sending packet " + ByteArrayToString(spckts, spckt_offset));
 		encrypt();
 		change_snd_key(data);
-		Debug.Log("Sending Epacket " + ByteArrayToString(spckts, spckt_offset));
+		//Debug.Log("Sending Epacket " + ByteArrayToString(spckts, spckt_offset));
 		stream.Write(spckts, 0, spckt_offset);
 		send_packets.ReleaseMutex();
 	}
@@ -249,7 +302,6 @@ public class NetCon : MonoBehaviour {
 	
 	void login_packet()
 	{
-		Debug.Log("Sending login data");
 		reset();
 		add((byte)12);	//login packet
 		add("stupid");
@@ -296,24 +348,37 @@ public class NetCon : MonoBehaviour {
 		Debug.Log("Submitting chat " + temp);
 	}
 	
-	void process_packet_contents()
+	public void process_packet_contents()
 	{
-		switch(rpckts[0])
+		byte opcode = get_byte();
+		switch(opcode)
 		{
 			case 18:	//disconnected by server
 				Debug.Log("Disconnected");
 				break;
-			case 8: 
 			case 42: 
 			case 91: 
 			case 105: //chat packets
 				Debug.Log("Chat packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
 				chat++;
-				//stuff.text += "Chat: " + chat;
+				stuff.text += "\nChat: " + chat;
 				Debug.Log("Received chat " + chat);
-				//scrl.value = 0;
-				break;			
+				scrl.value = 0;
+				break;
+			case 8: //normal chat
+				{
+					byte type;
+					uint sender;
+					string msg;
+					type = get_byte();
+					sender = get_uint();
+					msg = get_string();
+					stuff.text += "\n" + msg;
+					scrl.value = 0;
+				}
+				break;
 			case 10:	//server version
+				Debug.Log("Received server version");
 				login_packet();
 				break;
 			case 21:	//login
@@ -370,168 +435,59 @@ public class NetCon : MonoBehaviour {
 				}
 				break;
 			default:
-				Debug.Log("Unknown packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
+				//Debug.Log("Unknown packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
 				break;
 		}
-		stream.BeginRead(rpckts, 0, 2, new AsyncCallback(read_packet_contents), stream);
 	}
 	
-	void decrypt_packet_contents(IAsyncResult rslt)
-	{
-		int rcvd = stream.EndRead(rslt);
-		rpckt_offset += rcvd;
-		if (rpckt_offset < rpacket_length)
-		{
-			stream.BeginRead(rpckts, rpckt_offset, rpacket_length-rpckt_offset, 
-				new AsyncCallback(decrypt_packet_contents), stream);
-		}
-		else
-		{
-			//Debug.Log(rpacket_length);
-			//Debug.Log("packet " + ByteArrayToString(rpckts, rpacket_length));
-			if (has_key)
-			{
-				System.Byte[] data = new System.Byte[4];
-				decrypt();
-				data[0] = rpckts[0];
-				data[1] = rpckts[1];
-				data[2] = rpckts[2];
-				data[3] = rpckts[3];
-				change_rcv_key(data);
-			}
-			process_packet_contents();
-		}
-	}
-	
-	void read_packet_contents(IAsyncResult rslt)
-	{
-		if (rslt.IsCompleted)
-		{
-			int rcvd = stream.EndRead(rslt);
-			if (rcvd < 2)
-			{
-				rpckt_offset = rcvd;
-				stream.BeginRead(rpckts, rpckt_offset, 2-rcvd, 
-					new AsyncCallback(read_packet_contents), stream);
-			}
-			else
-			{
-				rpckt_offset = 0;
-				rpacket_length = (rpckts[0] | rpckts[1]<<8) - 2;
-				stream.BeginRead(rpckts, 0, rpacket_length, 
-					new AsyncCallback(decrypt_packet_contents), stream);
-			}
-		}
-	}
-
 	public void connect() {
 		Debug.Log("Connection");
 		TcpClient client = new TcpClient ("207.192.73.73", 2000);
 		stream = client.GetStream();
 		Debug.Log("Connected");
-		stream.BeginRead(rpckts, rpckt_offset, 2, new AsyncCallback(read_packet_contents), stream);
+		rcv_packets.ReleaseMutex();
 	}
 	
-	public void handleEvent(Vector3 position, Quaternion rotation){
-		// print (id);
-		// JSONObject json = new JSONObject ();
-		// json.AddField ("action", "move");
-		// JSONObject pos = new JSONObject();
-
-		// pos.AddField ("X", position.x.ToString());
-		// pos.AddField ("Y", position.y.ToString());
-		// pos.AddField ("Z", position.z.ToString());
-		// json.AddField ("position", pos);
-		// JSONObject rot = new JSONObject ();
-		// rot.AddField ("X", rotation.x.ToString());
-		// rot.AddField ("Y", rotation.y.ToString());
-		// rot.AddField ("Z", rotation.z.ToString());
-		// rot.AddField ("W", rotation.w.ToString());
-		// json.AddField ("rotation", rot);
-		// json.AddField ("id", id);
-		// send (json.ToString());
-
+	public void disconnect() {
+		stream.Dispose();
 	}
-
-	public void sendMove(Vector3 move, bool crouch, bool jump){
-		// JSONObject json = new JSONObject ();
-		// json.AddField ("action", "moveChar");
-		// JSONObject pos = new JSONObject();
+	
+	public void read_packet()
+	{
+		rcv_packets.WaitOne();
+		int bytes_read;
+		rpckt_offset = 0;
+		while (rpckt_offset < 2)
+		{
+			bytes_read = stream.Read(rpckts, rpckt_offset, 2-rpckt_offset);
+			if (bytes_read > 0)
+				rpckt_offset += bytes_read;
+		}
+		rpckt_offset = 0;
+		rpacket_length = (rpckts[0] | rpckts[1]<<8) - 2;
 		
-		// pos.AddField ("X", move.x.ToString());
-		// pos.AddField ("Y", move.y.ToString());
-		// pos.AddField ("Z", move.z.ToString());
-		// json.AddField ("position", pos);
-		// json.AddField ("id", id);
-		// json.AddField ("crouch", crouch);
-		// json.AddField ("jump", jump);
-		// send (json.ToString());
-	}
-
-	private void send(string json){
-		//writer.Write (json);
-		//writer.Flush ();
+		while (rpckt_offset < rpacket_length)
+		{
+			bytes_read = stream.Read(rpckts, rpckt_offset, rpacket_length-rpckt_offset);
+			if (bytes_read > 0)
+				rpckt_offset += bytes_read;
+		}
+		
+		if (has_key)
+		{
+			System.Byte[] data = new System.Byte[4];
+			decrypt();
+			data[0] = rpckts[0];
+			data[1] = rpckts[1];
+			data[2] = rpckts[2];
+			data[3] = rpckts[3];
+			change_rcv_key(data);
+		}
+		rpckt_offset = 0;
+		rcv_packets.ReleaseMutex();
 	}
 
 	void Update () {
-		readData ();
 	}
 
-	void readData(){
-	//	if (stream.CanRead) {
-	//		try{
-	//			byte[] bLen = new Byte[4];
-	//			int data = stream.Read(bLen, 0, 4);
-	//			if(data > 0){
-	//				int len = BitConverter.ToInt32( bLen, 0);
-	//				print("len = " + len);
-	//				Byte[] buff = new byte[1024];
-	//				data = stream.Read (buff, 0, len);
-	//				if (data > 0) {
-	//					string result = Encoding.ASCII.GetString (buff, 0, data);
-	//					stream.Flush();
-	//					parseData(result);
-	//				}
-	//			}
-	//		}catch (Exception ex){
-	//			print (ex);
-	//		}
-	//	}
-	}
-
-	void parseData(string data){
-		// JSONObject json = new JSONObject (data);
-		// string action = json.GetField ("action").str;
-		// print(action + "parse data" + data);
-		// JSONObject pos = json.GetField("position");
-		// Single pX = Convert.ToSingle (pos.GetField ("X").str);
-		// Single pY = Convert.ToSingle (pos.GetField ("Y").str);
-		// Single pZ = Convert.ToSingle (pos.GetField ("Z").str);
-		// Vector3 position = new Vector3 (pX, pY, pZ);
-		// print ("new vector = x-" + pos.GetField ("X").str + " y-" + pos.GetField ("Y").str);
-		// JSONObject rot = json.GetField("rotation");
-		// Single rX = Convert.ToSingle (rot.GetField ("X").str);
-		// Single rY = Convert.ToSingle (rot.GetField ("Y").str);
-		// Single rZ = Convert.ToSingle (rot.GetField ("Z").str);
-		// Single rW = Convert.ToSingle (rot.GetField ("W").str);
-		// Quaternion rotation = new Quaternion (rX, rY, rZ, rW);
-		// switch (action) {
-		// 	case "start":
-		// 		this.id = json.GetField ("id").str;
-		// 		createPlayer ();
-		// 		break;
-		// 	case "newPlayer":
-		// 		createNewClient (json.GetField ("id").str, position, rotation);
-		// 		break;
-		// 	case "move":
-		// 		moveClient (json.GetField ("id").str, position, rotation);
-		// 		break;
-		// }
-
-	}
-
-	void createPlayer(){
-		Instantiate(player, new Vector3(0, 1, 0), new Quaternion());
-	}
-	
 }
