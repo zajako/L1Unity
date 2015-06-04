@@ -218,6 +218,24 @@ public class NetCon : MonoBehaviour {
 		}
 	}
 	
+	void encrypt(byte[] pckt)
+	{
+		//Debug.Log("Encryption key " + ByteArrayToString(snd_key, 8));
+		if (pckt.Length != 0)
+		{
+			pckt[2] ^= snd_key[0];
+			
+			for (int i = 3; i < pckt.Length; i++)
+			{
+				pckt[i] ^= (byte)(snd_key[(i-2) & 7] ^ pckt[i-1]);
+			}
+			pckt[5] ^= (byte)(snd_key[2]);
+			pckt[4] ^= (byte)(snd_key[3] ^ pckt[5]);
+			pckt[3] ^= (byte)(snd_key[4] ^ pckt[4]);
+			pckt[2] ^= (byte)(snd_key[5] ^ pckt[3]);
+		}
+	}
+	
 	void encrypt()
 	{
 		//Debug.Log("Encryption key " + ByteArrayToString(snd_key, 8));
@@ -270,6 +288,26 @@ public class NetCon : MonoBehaviour {
 		snd_key[5] = (System.Byte)(temp>>8&0xFF);
 		snd_key[6] = (System.Byte)(temp>>16&0xFF);
 		snd_key[7] = (System.Byte)(temp>>24&0xFF);
+	}
+	
+	public void send_packet(byte[] pckt)
+	{
+		System.Byte[] data = new System.Byte[4];
+		pckt[0] = (byte)(pckt.Length&0xFF);
+		pckt[1] = (byte)((pckt.Length>>8)&0xFF);
+		data[0] = pckt[2];
+		data[1] = pckt[3];
+		data[2] = pckt[4];
+		data[3] = pckt[5];
+		
+		//Debug.Log("Sending packet " + ByteArrayToString(pckt, pckt.Length));
+		send_packets.WaitOne();
+		encrypt(pckt);
+		
+		change_snd_key(data);
+		//Debug.Log("Sending Epacket " + ByteArrayToString(pckt, pckt.Length));
+		stream.Write(pckt, 0, pckt.Length);
+		send_packets.ReleaseMutex();
 	}
 	
 	void send_packet()
@@ -327,92 +365,97 @@ public class NetCon : MonoBehaviour {
 	
 	public void chat_submit()
 	{
-		string temp = inp.text;
 		Debug.Log("Submitting chat " + inp.text);
-		switch('a')
+		switch(inp.text[0])
 		{
 			default:
-				reset();
-				add_byte(104);	//client chat
-				add_byte(0);	//regular chat
-				add_string(temp);
-				send_packet();
+				{
+				C_Chat temp = gameObject.AddComponent<C_Chat>();
+				temp.send(inp.text);
+				Destroy(temp);
+				}
 				break;
 		}
+		Debug.Log("Submitting chat " + inp.text);
 		inp.text = "";
-		Debug.Log("Submitting chat " + temp);
 	}
 	
 	public void process_packet_contents()
 	{
 		byte opcode = get_byte();
-		switch(opcode)
+		if (opcode == 18)
 		{
-			case 18:	//disconnected by server
-				Debug.Log("Disconnected");
-				break;
-			case 42: 
-			case 91: 
-			case 105: //chat packets
-			case 8: //normal chat
-				S_Chat temp = gameObject.AddComponent<S_Chat>();
-				temp.process(rpckts, rpacket_length);
-				Destroy(temp);
-				break;
-			case 10:	//server version
-				Debug.Log("Received server version");
-				login_packet();
-				break;
-			case 21:	//login
-				login_check();
-				break;
-			case 65:	//key packet
-				uint seed = get_uint();
-				init_key(seed);
-				Debug.Log("Received encryption seed");
+			Debug.Log("Disconnected");
+		}
+		else if (   (opcode == ServerPacketBase.S_CHAT_WHISPER) ||
+					(opcode == ServerPacketBase.S_CHAT_SHOUT) ||
+					(opcode == ServerPacketBase.S_CHAT_GLOBAL) ||
+					(opcode == ServerPacketBase.S_CHAT_NORMAL) )
+		{
+			S_Chat temp = gameObject.AddComponent<S_Chat>();
+			temp.process(rpckts, rpacket_length);
+			Destroy(temp);
+		}
+		else if (opcode == 10)	//server version
+		{
+			Debug.Log("Received server version");
+			login_packet();
+		}
+		else if (opcode == 21)	//login
+		{
+			login_check();
+		}
+		else if (opcode == 65) //key packet
+		{
+			uint seed = get_uint();
+			init_key(seed);
+			Debug.Log("Received encryption seed");
+			reset();
+			add_byte(71);
+			add_short(0x33);
+			add_int(-1);
+			add_byte(32);
+			add_int(101101);
+			send_packet();
+		}
+		else if (opcode == 90)	//news packet
+		{
+			reset();
+			add_byte(43);	//client click packet
+			add_int(0);
+			add_int(0);
+			send_packet();
+		}
+		else if (opcode == 113)	//num char packet
+		{
+			num_chars = get_byte();
+			chars_rcvd = 0;
+			Debug.Log(num_chars + " chars total");
+		}
+		else if (opcode == 99)	//login char packet
+		{
+			int name_len = 0;
+			chars_rcvd++;
+			if (chars_rcvd == 1)
+			{
+				name_len = 0;
+				charname = get_string();
+			}
+			if (chars_rcvd == num_chars)
+			{
+				//send first character
+				Debug.Log("Logging in as ;" + charname + ";");
 				reset();
-				add_byte(71);
-				add_short(0x33);
-				add_int(-1);
-				add_byte(32);
-				add_int(101101);
-				send_packet();
-				break;
-			case 90:	//news packet
-				reset();
-				add_byte(43);	//client click packet
+				add_byte(83);	//use char packet
+				add_string(charname);
 				add_int(0);
 				add_int(0);
 				send_packet();
-				break;
-			case 113:	//num char packet
-				num_chars = get_byte();
-				chars_rcvd = 0;
-				Debug.Log(num_chars + " chars total");
-				break;
-			case 99:	//login char packet
-				int name_len = 0;
-				chars_rcvd++;
-				if (chars_rcvd == 1)
-				{
-					name_len = 0;
-					charname = get_string();
-				}
-				if (chars_rcvd == num_chars)
-				{
-					//send first character
-					Debug.Log("Logging in as ;" + charname + ";");
-					reset();
-					add_byte(83);	//use char packet
-					add_string(charname);
-					add_int(0);
-					add_int(0);
-					send_packet();
-				}
-				break;
-			default:
+			}
+		}
+		else
+		{
 				Debug.Log("Unknown packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
-				break;
 		}
 	}
 	

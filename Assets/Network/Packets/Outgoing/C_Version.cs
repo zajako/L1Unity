@@ -3,9 +3,9 @@ using System.Collections;
 
 public class C_Version : ClientPacketBase {
 
-	new void Start()
+	public override void Awake()
 	{
-		base.Start();
+		base.Awake();
 
 		int clientLanguage = 0;				//Country: 0.US 3.Taiwan 4.Janpan 5.China
 		int clientVersion = 0x07cbf4dd;		

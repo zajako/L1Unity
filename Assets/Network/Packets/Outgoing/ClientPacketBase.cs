@@ -5,13 +5,22 @@ using System.IO;
 
 public class ClientPacketBase : MonoBehaviour {
 
-	MemoryStream _byteStream = new MemoryStream();
-	StringBuilder _packetString = new StringBuilder();
+	protected NetCon netcon;
+	MemoryStream _byteStream;
+	StringBuilder _packetString;
 
-	protected void Start()
+	protected void send_packet()
 	{
+		netcon.send_packet(_byteStream.ToArray());
+	}
+	
+	public virtual void Awake()
+	{
+		_byteStream = new MemoryStream();
+		_packetString = new StringBuilder();
+		netcon = GameObject.Find("netcon").GetComponent<NetCon>();
 		_packetString.Append("Sending Packet: "+getType()+" ");
-
+		writeH(0);	//packet size
 	}
 
 	protected void writeD(int value)
@@ -73,6 +82,7 @@ public class ClientPacketBase : MonoBehaviour {
 		{
 			addToStream(System.Text.Encoding.UTF8.GetBytes(value));
 		}
+		addToStream(0);
 
 		_packetString.Append("[S: "+value+"]");
 	}
@@ -120,6 +130,7 @@ public class ClientPacketBase : MonoBehaviour {
 
 	private void addToStream(byte b)
 	{
+		Debug.Log("adding " + b + " to stream");
 		_byteStream.WriteByte(b);
 	}
 
@@ -130,4 +141,8 @@ public class ClientPacketBase : MonoBehaviour {
 			_byteStream.WriteByte(b[i]);
 		}
 	}
+	
+	public static byte C_CHAT_WHISPER = 13;
+	public static byte C_CHAT_GLOBAL = 40;
+	public static byte C_CHAT_NORMAL = 104;
 }

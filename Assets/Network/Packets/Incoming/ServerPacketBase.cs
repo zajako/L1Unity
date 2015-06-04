@@ -61,4 +61,9 @@ public class ServerPacketBase : MonoBehaviour {
 		return Encoding.UTF8.GetString(rpckts, rpckt_offset-i-1, i);
 	}
 	
+	public static byte S_CHAT_NORMAL = 8;
+	public static byte S_CHAT_GLOBAL = 105;
+	public static byte S_CHAT_SHOUT = 42;
+	public static byte S_CHAT_WHISPER = 91;
+	
 }
