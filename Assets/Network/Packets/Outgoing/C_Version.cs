@@ -3,6 +3,8 @@ using System.Collections;
 
 public class C_Version : ClientPacketBase {
 
+	int opcode = 14;
+
 	new void Start()
 	{
 		base.Start();
@@ -12,6 +14,7 @@ public class C_Version : ClientPacketBase {
 		int serverType = 0x087f7dc2; 
 		int npcVersion = 0x07cbf4d9;
 
+		writeC(opcode);
 		writeH(0);
 		writeC(0);
 		writeD(clientLanguage);
