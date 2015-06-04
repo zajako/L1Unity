@@ -295,7 +295,7 @@ GameObject:
   - 222: {fileID: 400632135}
   - 114: {fileID: 400632134}
   m_Layer: 5
-  m_Name: Text
+  m_Name: ChatText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -341,83 +341,9 @@ MonoBehaviour:
     m_Alignment: 6
     m_RichText: 1
     m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi placerat
-    accumsan ipsum vel tempor. Pellentesque aliquam urna sit amet mi fermentum ultrices.
-    Curabitur a ligula blandit, pretium arcu quis, bibendum erat. Proin orci ipsum,
-    tristique eget porttitor eu, condimentum eget mauris. Duis pharetra bibendum urna,
-    et bibendum ante laoreet quis. In non ex ullamcorper, tincidunt neque quis, tristique
-    leo. Fusce laoreet consequat metus, at aliquet nisi hendrerit vitae. Duis sed
-    blandit justo. Ut condimentum vestibulum ante eu lobortis. Proin tincidunt varius
-    erat vitae cursus. Praesent nec erat sed diam suscipit ullamcorper ornare in leo.
-    Praesent id dictum dolor, aliquam hendrerit velit. Donec tincidunt eros quis purus
-    fermentum, vitae venenatis diam iaculis. Fusce et cursus augue, eget lacinia justo.\r\n\r\nMauris
-    nec lorem sem. Etiam at velit lacus. Fusce ut purus tellus. Etiam vestibulum scelerisque
-    nulla. Maecenas vel pellentesque purus. Sed tempor nulla pharetra lacus suscipit
-    facilisis. Maecenas non tincidunt nisi. Sed eu tempus dui, non finibus sem. Praesent
-    pharetra massa at rutrum porta. Proin imperdiet tellus nulla. Phasellus placerat
-    gravida metus, eget cursus sapien viverra at. Quisque dictum ligula ac rhoncus
-    posuere. Praesent dignissim auctor luctus. Fusce velit nunc, pellentesque eu nisi
-    et, vulputate gravida eros. Proin pellentesque, dolor suscipit ullamcorper tincidunt,
-    ipsum ipsum bibendum orci, a laoreet libero orci a ipsum. Suspendisse nec massa
-    nisi.\r\n\r\nMorbi eu purus tristique, fringilla lorem ut, rhoncus dui. Quisque
-    feugiat imperdiet ipsum a porta. In hac habitasse platea dictumst. Aliquam convallis
-    risus vel sem ullamcorper mattis. Cras fermentum est at risus consequat blandit
-    in id augue. Nulla nisi mi, tincidunt sed sollicitudin sit amet, condimentum in
-    arcu. Suspendisse odio eros, ultrices sit amet tincidunt a, dapibus eget nibh.\r\n\r\nIn
-    orci dui, pharetra quis ante nec, dictum fermentum justo. Integer finibus neque
-    vitae nisl vestibulum lobortis. Pellentesque habitant morbi tristique senectus
-    et netus et malesuada fames ac turpis egestas. Fusce luctus orci sed elit tincidunt,
-    eget venenatis erat venenatis. In consectetur, turpis sed aliquet condimentum,
-    ligula dolor hendrerit urna, sed cursus mauris ante in quam. Phasellus posuere,
-    massa at eleifend aliquam, mauris est commodo lorem, nec pulvinar nisl dolor vel
-    nisi. Vestibulum leo nibh, maximus eget justo sit amet, luctus laoreet ligula.
-    Aliquam in ex sit amet purus auctor cursus non malesuada est. Class aptent taciti
-    sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Pellentesque
-    habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.\r\n\r\nDonec
-    nibh leo, hendrerit et aliquam in, mattis ac nisi. In ac felis felis. Pellentesque
-    sed libero massa. Nunc euismod est ante, nec sagittis mauris lacinia venenatis.
-    In varius condimentum sollicitudin. Cras at vehicula tellus, et egestas arcu.
-    Duis ut est ex.\r\n\r\nPraesent a venenatis leo. Donec accumsan eget dolor nec
-    venenatis. Nulla facilisi. Vivamus pellentesque mauris vel enim commodo, sed ultrices
-    tellus ullamcorper. Donec malesuada enim sed nulla commodo tempus. Phasellus sit
-    amet euismod elit. Maecenas elementum augue molestie sapien scelerisque tincidunt.
-    Vivamus et venenatis ante, scelerisque faucibus tortor. Donec efficitur ultrices
-    tellus in pulvinar. Praesent scelerisque non libero scelerisque cursus. Nullam
-    fringilla ipsum eros, nec varius nisi congue sit amet.\r\n\r\nQuisque tristique
-    ultricies pretium. Aliquam erat volutpat. Aliquam lobortis mauris vel arcu facilisis
-    mattis. Suspendisse nec semper justo. Nunc sed risus neque. Donec ut rhoncus sem.
-    Quisque luctus sem vitae mauris eleifend euismod. Pellentesque pulvinar, augue
-    quis malesuada molestie, nisl augue sollicitudin enim, ut elementum quam lorem
-    ac augue. Pellentesque suscipit viverra ante.\r\n\r\nMaecenas nec magna ac massa
-    sodales sollicitudin sit amet non ipsum. Interdum et malesuada fames ac ante ipsum
-    primis in faucibus. Etiam mattis diam eget eros consequat, eget dignissim enim
-    blandit. Nullam vulputate felis sit amet rhoncus efficitur. Donec vel nunc vitae
-    ex commodo auctor sit amet eu velit. Duis maximus ligula at semper aliquam. Nulla
-    lobortis aliquam cursus. Integer ultrices neque dolor, ac convallis nibh mollis
-    in. Vivamus blandit leo consequat, suscipit enim et, sodales lacus. Phasellus
-    justo urna, sodales vitae tortor eu, suscipit consectetur quam. Aliquam lacinia
-    fringilla ex, non auctor urna feugiat nec. Nullam sodales elementum est, nec suscipit
-    ex. Nunc turpis est, luctus vel elementum at, pellentesque a mauris. Etiam massa
-    lectus, placerat ac dolor ac, tristique bibendum orci. Sed convallis orci ac enim
-    blandit cursus. Etiam lorem tortor, mattis sit amet luctus vitae, luctus vitae
-    elit.\r\n\r\nAenean pulvinar facilisis maximus. Maecenas elit massa, eleifend
-    nec tellus et, posuere molestie sapien. Mauris ex enim, varius vel aliquet eget,
-    maximus quis velit. Vestibulum nec scelerisque turpis, id facilisis est. In et
-    posuere ante. Nam porttitor mi non enim mollis tristique. Nam tortor quam, tincidunt
-    at risus id, convallis hendrerit est.\r\n\r\nNullam nulla nulla, tincidunt eu
-    tincidunt id, posuere sit amet ipsum. Morbi laoreet lorem vel velit pretium tristique.
-    Curabitur vel varius lectus, sit amet porta purus. In id turpis vestibulum, faucibus
-    tortor a, malesuada est. Nulla vulputate et urna consequat tempus. Donec nec semper
-    tellus. Nulla lobortis pellentesque neque, at ornare lorem blandit at. Mauris
-    vulputate, ipsum et pharetra laoreet, turpis purus dignissim justo, sit amet gravida
-    nibh velit eu ipsum. In hac habitasse platea dictumst. Maecenas pharetra urna
-    nulla, ut condimentum sem maximus vel. Integer sollicitudin eget libero blandit
-    efficitur. Nam orci massa, viverra nec est vitae, imperdiet condimentum nunc.
-    Pellentesque semper ultricies velit, at posuere dolor lobortis ut. Quisque congue,
-    eros eget varius egestas, neque quam interdum massa, a ultrices ligula nunc ac
-    sapien. \nThe end"
+  m_Text: 
 --- !u!222 &400632135
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -732,9 +658,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
-  stuff: {fileID: 400632134}
   inp: {fileID: 592032041}
-  scrl: {fileID: 1245190801}
 --- !u!4 &1122479188
 Transform:
   m_ObjectHideFlags: 0
@@ -759,7 +683,7 @@ GameObject:
   - 114: {fileID: 1245190803}
   - 114: {fileID: 1245190801}
   m_Layer: 5
-  m_Name: Scrollbar
+  m_Name: ChatScrollbar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -867,7 +791,7 @@ GameObject:
   - 222: {fileID: 1270176641}
   - 114: {fileID: 1270176640}
   m_Layer: 5
-  m_Name: Text
+  m_Name: QuitButtonText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1019,7 +943,7 @@ GameObject:
   - 222: {fileID: 1845842057}
   - 114: {fileID: 1845842056}
   m_Layer: 5
-  m_Name: Text
+  m_Name: InputText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1165,7 +1089,7 @@ MonoBehaviour:
   m_Content: {fileID: 400632133}
   m_Horizontal: 0
   m_Vertical: 1
-  m_MovementType: 0
+  m_MovementType: 1
   m_Elasticity: .100000001
   m_Inertia: 1
   m_DecelerationRate: .135000005
@@ -1196,6 +1120,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 1924824521}
+  - 114: {fileID: 1924824522}
   m_Layer: 0
   m_Name: ChatBox
   m_TagString: Untagged
@@ -1217,6 +1142,17 @@ Transform:
   - {fileID: 592032040}
   m_Father: {fileID: 64823113}
   m_RootOrder: 0
+--- !u!114 &1924824522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1924824520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f350a1bbcc6476240b03df6f288a54ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1967926902
 GameObject:
   m_ObjectHideFlags: 0
@@ -1229,7 +1165,7 @@ GameObject:
   - 114: {fileID: 1967926905}
   - 114: {fileID: 1967926904}
   m_Layer: 5
-  m_Name: Button
+  m_Name: QuitButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

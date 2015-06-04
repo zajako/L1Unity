@@ -32,4 +32,8 @@ public class login : MonoBehaviour {
 			_backgroundWorker.RunWorkerAsync();
 		}
 	}
+	
+	void OnApplicationQuit() {
+		con.disconnect();
+    }
 }

@@ -12,9 +12,7 @@ using System.IO;
 
 public class NetCon : MonoBehaviour {
 	public Rigidbody player;
-	public Text stuff;
 	public InputField inp;
-	public Scrollbar scrl;
 	NetworkStream stream;
 	string id;
 	System.Byte[] rpckts;
@@ -31,7 +29,6 @@ public class NetCon : MonoBehaviour {
 	System.Byte[] snd_key;
 	
 	string charname;
-	int chat;
 	
 	int num_chars;
 	int chars_rcvd;
@@ -44,9 +41,6 @@ public class NetCon : MonoBehaviour {
 		has_key = false;
 		rcv_key = new System.Byte[8];
 		snd_key = new System.Byte[8];
-		chat = 0;
-		stuff.text = "Chat started: " + chat;
-		scrl.value = 0;
 		send_packets = new Mutex();
 		rcv_packets = new Mutex(true);
 	}
@@ -74,12 +68,12 @@ public class NetCon : MonoBehaviour {
 		spckt_offset = 2;
 	}
 	
-	public byte get_byte()
+	byte get_byte()
 	{
 		return rpckts[rpckt_offset++];
 	}
 	
-	public short get_short()
+	short get_short()
 	{
 		short ret = 0;
 		ret = (short)(rpckts[rpckt_offset] |
@@ -88,7 +82,7 @@ public class NetCon : MonoBehaviour {
 		return ret;
 	}
 	
-	public ushort get_ushort()
+	ushort get_ushort()
 	{
 		ushort ret = 0;
 		ret = (ushort)(rpckts[rpckt_offset] |
@@ -97,7 +91,7 @@ public class NetCon : MonoBehaviour {
 		return ret;
 	}
 	
-	public int get_int()
+	int get_int()
 	{
 		int ret = 0;
 		ret = rpckts[rpckt_offset] |
@@ -108,7 +102,7 @@ public class NetCon : MonoBehaviour {
 		return ret;
 	}
 	
-	public uint get_uint()
+	uint get_uint()
 	{
 		uint ret = 0;
 		ret = (uint)(rpckts[rpckt_offset] |
@@ -119,35 +113,35 @@ public class NetCon : MonoBehaviour {
 		return ret;
 	}
 	
-	public string get_string()
+	string get_string()
 	{
 		int i;
 		for (i = 0; rpckts[i+rpckt_offset] != 0; i++);
 		rpckt_offset += i+1;
 		return Encoding.UTF8.GetString(rpckts, rpckt_offset-i-1, i);
 	}
-	
-	public void add(byte a)
+		
+	public void add_byte(byte a)
 	{
 		spckts[spckt_offset] = a;
 		spckt_offset++;
 	}
 	
-	public void add(short a)
+	public void add_short(short a)
 	{
 		spckts[spckt_offset] = (byte)(a&0xFF);
 		spckts[spckt_offset+1] = (byte)((a>>8)&0xFF);
 		spckt_offset += 2;
 	}
 	
-	public void add(ushort a)
+	public void add_ushort(ushort a)
 	{
 		spckts[spckt_offset] = (byte)(a&0xFF);
 		spckts[spckt_offset+1] = (byte)((a>>8)&0xFF);
 		spckt_offset += 2;
 	}
 	
-	public void add(int a)
+	public void add_int(int a)
 	{
 		spckts[spckt_offset] = (byte)(a&0xFF);
 		spckts[spckt_offset+1] = (byte)((a>>8)&0xFF);
@@ -156,7 +150,7 @@ public class NetCon : MonoBehaviour {
 		spckt_offset += 4;
 	}
 	
-	public void add(uint a)
+	public void add_uint(uint a)
 	{
 		spckts[spckt_offset] = (byte)(a&0xFF);
 		spckts[spckt_offset+1] = (byte)((a>>8)&0xFF);
@@ -165,7 +159,7 @@ public class NetCon : MonoBehaviour {
 		spckt_offset += 4;
 	}
 	
-	public void add(string a)
+	public void add_string(string a)
 	{
 		for (int i = 0; i < a.Length; i++)
 			spckts[spckt_offset+i] = (byte)a[i];
@@ -303,26 +297,27 @@ public class NetCon : MonoBehaviour {
 	void login_packet()
 	{
 		reset();
-		add((byte)12);	//login packet
-		add("stupid");
-		add("stupid");
+		add_byte(12);	//login packet
+		add_string("stupid");
+		add_string("stupid");
 		send_packet();
 	}
 	
 	void login_check()
 	{
-		switch (rpckts[1])
+		byte val = get_byte();
+		switch (val)
 		{
 			case 3:
 				reset();
-				add((byte)57);	//alive packet
-				add((int)0);
-				add((int)0);
+				add_byte(57);	//alive packet
+				add_int(0);
+				add_int(0);
 				send_packet();
 				reset();
-				add((byte)92);	//init game
-				add((int)0);
-				add((int)0);
+				add_byte(92);	//init game
+				add_int(0);
+				add_int(0);
 				send_packet();
 				break;
 			default:
@@ -338,9 +333,9 @@ public class NetCon : MonoBehaviour {
 		{
 			default:
 				reset();
-				add((byte)104);	//client chat
-				add((byte)0);	//regular chat
-				add(temp);
+				add_byte(104);	//client chat
+				add_byte(0);	//regular chat
+				add_string(temp);
 				send_packet();
 				break;
 		}
@@ -359,23 +354,10 @@ public class NetCon : MonoBehaviour {
 			case 42: 
 			case 91: 
 			case 105: //chat packets
-				Debug.Log("Chat packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
-				chat++;
-				stuff.text += "\nChat: " + chat;
-				Debug.Log("Received chat " + chat);
-				scrl.value = 0;
-				break;
 			case 8: //normal chat
-				{
-					byte type;
-					uint sender;
-					string msg;
-					type = get_byte();
-					sender = get_uint();
-					msg = get_string();
-					stuff.text += "\n" + msg;
-					scrl.value = 0;
-				}
+				S_Chat temp = gameObject.AddComponent<S_Chat>();
+				temp.process(rpckts, rpacket_length);
+				Destroy(temp);
 				break;
 			case 10:	//server version
 				Debug.Log("Received server version");
@@ -385,57 +367,51 @@ public class NetCon : MonoBehaviour {
 				login_check();
 				break;
 			case 65:	//key packet
-				uint seed = ((uint)rpckts[1]) |
-							((uint)rpckts[2])<<8 |
-							((uint)rpckts[3])<<16 |
-							((uint)rpckts[4])<<24;
+				uint seed = get_uint();
 				init_key(seed);
 				Debug.Log("Received encryption seed");
 				reset();
-				add((byte)71);
-				add((short)0x33);
-				add((int)-1);
-				add((byte)32);
-				add((int)101101);
+				add_byte(71);
+				add_short(0x33);
+				add_int(-1);
+				add_byte(32);
+				add_int(101101);
 				send_packet();
 				break;
 			case 90:	//news packet
 				reset();
-				add((byte)43);	//client click packet
-				add((int)0);
-				add((int)0);
+				add_byte(43);	//client click packet
+				add_int(0);
+				add_int(0);
 				send_packet();
 				break;
 			case 113:	//num char packet
-				num_chars = rpckts[1];
+				num_chars = get_byte();
 				chars_rcvd = 0;
 				Debug.Log(num_chars + " chars total");
 				break;
 			case 99:	//login char packet
 				int name_len = 0;
 				chars_rcvd++;
-				Debug.Log("Char info packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
 				if (chars_rcvd == 1)
 				{
 					name_len = 0;
-					for (; rpckts[name_len+1] != 0; name_len++);
-					Debug.Log("Char name length " + name_len);
-					charname = Encoding.UTF8.GetString(rpckts, 1, name_len);
+					charname = get_string();
 				}
 				if (chars_rcvd == num_chars)
 				{
 					//send first character
 					Debug.Log("Logging in as ;" + charname + ";");
 					reset();
-					add((byte)83);	//use char packet
-					add(charname);
-					add((int)0);
-					add((int)0);
+					add_byte(83);	//use char packet
+					add_string(charname);
+					add_int(0);
+					add_int(0);
 					send_packet();
 				}
 				break;
 			default:
-				//Debug.Log("Unknown packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
+				Debug.Log("Unknown packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
 				break;
 		}
 	}
