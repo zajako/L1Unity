@@ -6,12 +6,14 @@ public class C_Version : ClientPacketBase {
 	public override void Awake()
 	{
 		base.Awake();
+		int opcode = 14;
 
 		int clientLanguage = 0;				//Country: 0.US 3.Taiwan 4.Janpan 5.China
 		int clientVersion = 0x07cbf4dd;		
 		int serverType = 0x087f7dc2; 
 		int npcVersion = 0x07cbf4d9;
 
+		writeC(opcode);
 		writeH(0);
 		writeC(0);
 		writeD(clientLanguage);
