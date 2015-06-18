@@ -3,7 +3,7 @@ using System.Collections;
 using System.Text;
 using System.IO;
 
-public class ClientPacketBase : MonoBehaviour {
+public class ClientPacketBase {
 
 	protected NetCon netcon;
 	MemoryStream _byteStream;
@@ -14,13 +14,13 @@ public class ClientPacketBase : MonoBehaviour {
 		netcon.send_packet(_byteStream.ToArray());
 	}
 	
-	public virtual void Awake()
+	public void Start()
 	{
-		_byteStream = new MemoryStream();
-		_packetString = new StringBuilder();
-		netcon = GameObject.Find("netcon").GetComponent<NetCon>();
-		_packetString.Append("Sending Packet: "+getType()+" ");
-		writeH(0);	//packet size
+		 _byteStream = new MemoryStream();
+		 _packetString = new StringBuilder();
+		// netcon = GameObject.Find("netcon").GetComponent<NetCon>();
+		 _packetString.Append("Sending Packet: "+getType()+" ");
+		 writeH(0);	//packet size
 	}
 
 	protected void writeD(int value)

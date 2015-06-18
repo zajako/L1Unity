@@ -2,11 +2,13 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public class C_Chat : ClientPacketBase {
+public class C_Chat : ClientPacketBase
+{
 
-	public override void Awake()
+	public C_Chat(string msg)
 	{
-		base.Awake();
+		base.Start();
+		send(msg);
 	}
 	
 	public void send(string msg)
@@ -73,29 +75,21 @@ public class C_Chat : ClientPacketBase {
 				send_packet();
 				break;
 			case '/':
-				{
-				Text stuff;
-				Scrollbar scrl;
-				stuff = GameObject.Find("ChatText").GetComponent<Text>();
-				scrl = GameObject.Find("ChatScrollbar").GetComponent<Scrollbar>();
-				stuff.text += "\nInvalid command \"" + msg.Substring(1, msg.Length-1) + "\"";
-				scrl.value = 0;
-				}
+				// {
+				// Text stuff;
+				// Scrollbar scrl;
+				// stuff = GameObject.Find("ChatText").GetComponent<Text>();
+				// scrl = GameObject.Find("ChatScrollbar").GetComponent<Scrollbar>();
+				// stuff.text += "\nInvalid command \"" + msg.Substring(1, msg.Length-1) + "\"";
+				// scrl.value = 0;
+				// }
 				break;
 			default:
 				writeC(C_CHAT_NORMAL);
 				writeC(0);
 				writeS(msg);
-				send_packet();
+				//send_packet();
 				break;
 		}
-		/*
-		writeH(0);
-		writeC(0);
-		writeD(clientLanguage);
-		writeH(serverType);
-		writeH(npcVersion);
-		writeD(clientVersion);
-		*/
 	}
 }

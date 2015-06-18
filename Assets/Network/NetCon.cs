@@ -289,6 +289,11 @@ public class NetCon : MonoBehaviour {
 		snd_key[6] = (System.Byte)(temp>>16&0xFF);
 		snd_key[7] = (System.Byte)(temp>>24&0xFF);
 	}
+
+	public void send_packet(ClientPacketBase pckt)
+	{
+		send_packet(pckt.getBytes());
+	}
 	
 	public void send_packet(byte[] pckt)
 	{
@@ -370,9 +375,11 @@ public class NetCon : MonoBehaviour {
 		{
 			default:
 				{
-				C_Chat temp = gameObject.AddComponent<C_Chat>();
-				temp.send(inp.text);
-				Destroy(temp);
+				send_packet(new C_Chat(inp.text));
+
+				// C_Chat temp = gameObject.AddComponent<C_Chat>();
+				// temp.send(inp.text);
+				// Destroy(temp);
 				}
 				break;
 		}
