@@ -32,6 +32,7 @@ public class NetCon : MonoBehaviour {
 	
 	int num_chars;
 	int chars_rcvd;
+
 	// Use this for initialization
 	void Start () {
 		Debug.Log("Starting EventListener");
@@ -337,7 +338,7 @@ public class NetCon : MonoBehaviour {
 		send_packets.ReleaseMutex();
 	}
 	
-	void login_packet()
+	public void login_packet()
 	{
 		reset();
 		add_byte(12);	//login packet
@@ -346,7 +347,7 @@ public class NetCon : MonoBehaviour {
 		send_packet();
 	}
 	
-	void login_check()
+	public void login_check()
 	{
 		byte val = get_byte();
 		switch (val)
@@ -390,29 +391,8 @@ public class NetCon : MonoBehaviour {
 	public void process_packet_contents()
 	{
 		byte opcode = get_byte();
-		if (opcode == 18)
-		{
-			Debug.Log("Disconnected");
-		}
-		else if (   (opcode == ServerPacketBase.S_CHAT_WHISPER) ||
-					(opcode == ServerPacketBase.S_CHAT_SHOUT) ||
-					(opcode == ServerPacketBase.S_CHAT_GLOBAL) ||
-					(opcode == ServerPacketBase.S_CHAT_NORMAL) )
-		{
-			S_Chat temp = gameObject.AddComponent<S_Chat>();
-			temp.process(rpckts, rpacket_length);
-			Destroy(temp);
-		}
-		else if (opcode == 10)	//server version
-		{
-			Debug.Log("Received server version");
-			login_packet();
-		}
-		else if (opcode == 21)	//login
-		{
-			login_check();
-		}
-		else if (opcode == 65) //key packet
+
+		if (opcode == 65) //key packet
 		{
 			uint seed = get_uint();
 			init_key(seed);
@@ -425,14 +405,8 @@ public class NetCon : MonoBehaviour {
 			add_int(101101);
 			send_packet();
 		}
-		else if (opcode == 90)	//news packet
-		{
-			reset();
-			add_byte(43);	//client click packet
-			add_int(0);
-			add_int(0);
-			send_packet();
-		}
+
+
 		else if (opcode == 113)	//num char packet
 		{
 			num_chars = get_byte();
@@ -460,10 +434,12 @@ public class NetCon : MonoBehaviour {
 				send_packet();
 			}
 		}
+
 		else
 		{
-				Debug.Log("Unknown packet (" + rpckts[0] + ") " + ByteArrayToString(rpckts, rpacket_length));
+			new PacketHandler(this, opcode, rpckts, rpacket_length);
 		}
+		
 	}
 	
 	public void connect() {
@@ -514,6 +490,18 @@ public class NetCon : MonoBehaviour {
 	}
 
 	void Update () {
+	}
+
+
+	ChatBox _chatInterface;
+	public ChatBox getChatInterface()
+	{
+		if(!_chatInterface)
+		{
+			_chatInterface = gameObject.AddComponent<ChatBox>();
+		}
+
+		return _chatInterface;
 	}
 
 }
