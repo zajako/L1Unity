@@ -25,7 +25,7 @@ public class C_Chat : ClientPacketBase
 						break;
 					}
 				}
-				writeC(C_CHAT_WHISPER);
+				writeC(OpCodes.C_CHAT_WHISPER);
 				writeS(msg.Substring(1, i-1));
 				if (i < msg.Length)
 				{
@@ -36,43 +36,36 @@ public class C_Chat : ClientPacketBase
 					writeS(" ");
 				}
 				}
-				send_packet();
 				break;
 			case '@':
-				writeC(C_CHAT_NORMAL);
+				writeC(OpCodes.C_CHAT_NORMAL);
 				writeC(104);
 				writeS(msg.Substring(1, msg.Length-1));
-				send_packet();
 				break;
 			case '#':
-				writeC(C_CHAT_NORMAL);
+				writeC(OpCodes.C_CHAT_NORMAL);
 				writeC(11);
 				writeS(msg.Substring(1, msg.Length-1));
-				send_packet();
 				break;
 			case '$':
-				writeC(C_CHAT_NORMAL);
+				writeC(OpCodes.C_CHAT_NORMAL);
 				writeC(12);
 				writeS(msg.Substring(1, msg.Length-1));
-				send_packet();
 				break;
 			case '&':
-				writeC(C_CHAT_NORMAL);
+				writeC(OpCodes.C_CHAT_NORMAL);
 				writeC(3);
 				writeS(msg.Substring(1, msg.Length-1));
-				send_packet();
 				break;
 			case '%':
-				writeC(C_CHAT_NORMAL);
+				writeC(OpCodes.C_CHAT_NORMAL);
 				writeC(13);
 				writeS(msg.Substring(1, msg.Length-1));
-				send_packet();
 				break;
 			case '*':
-				writeC(C_CHAT_NORMAL);
+				writeC(OpCodes.C_CHAT_NORMAL);
 				writeC(14);
 				writeS(msg.Substring(1, msg.Length-1));
-				send_packet();
 				break;
 			case '/':
 				// {
@@ -85,10 +78,9 @@ public class C_Chat : ClientPacketBase
 				// }
 				break;
 			default:
-				writeC(C_CHAT_NORMAL);
+				writeC(OpCodes.C_CHAT_NORMAL);
 				writeC(0);
 				writeS(msg);
-				//send_packet();
 				break;
 		}
 	}

@@ -3,22 +3,15 @@ using System.Collections;
 using System.Text;
 using System.IO;
 
-public class ClientPacketBase {
-
-	protected NetCon netcon;
+public class ClientPacketBase
+{
 	MemoryStream _byteStream;
 	StringBuilder _packetString;
 
-	protected void send_packet()
-	{
-		netcon.send_packet(_byteStream.ToArray());
-	}
-	
 	public void Start()
 	{
 		 _byteStream = new MemoryStream();
 		 _packetString = new StringBuilder();
-		// netcon = GameObject.Find("netcon").GetComponent<NetCon>();
 		 _packetString.Append("Sending Packet: "+getType()+" ");
 		 writeH(0);	//packet size
 	}
@@ -141,8 +134,4 @@ public class ClientPacketBase {
 			_byteStream.WriteByte(b[i]);
 		}
 	}
-	
-	public static byte C_CHAT_WHISPER = 13;
-	public static byte C_CHAT_GLOBAL = 40;
-	public static byte C_CHAT_NORMAL = 104;
 }
