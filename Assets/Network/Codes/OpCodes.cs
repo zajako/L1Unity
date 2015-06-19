@@ -1,29 +1,32 @@
 using UnityEngine;
 
-public class OpCodes : MonoBehaviour
+static class OpCodes
 {
 	//OPCODES temporary file until config version made.
 	//All temporary opcodes are for the tikal_antharas client
 
 
 	//OUTGOING AKA Client Packets		CLIENT => Server
-	public static int C_AUTH_LOGIN		=	113;
-	public static int C_VERSION			=	34;
-	public static int C_CHAT_NORMAL		=	18;
-	public static int C_CHAT_WHISPER	=	92;
-	public static int C_CHAT_GLOBAL		=	115;
+	public const int C_AUTH_LOGIN		=	12;
+	public const int C_VERSION			=	71;
+	public const int C_CHAT_NORMAL		=	104;
+	public const int C_CHAT_WHISPER		=	13;
+	public const int C_CHAT_GLOBAL		=	40;
+	public const int C_MENUCLICK		= 	43;
 
 
 	//Incoming AKA Server Packets		SERVER => Client
-	public static int S_VERSION			=	89;
-	public static int S_SERVER_MESSAGE	=	98;
-	public static int S_CHAR_AMOUNT		=	80;
-	public static int S_CHAR_PACKS		=	102;
-	public static int S_CHAT_NORMAL		=	71;
-	public static int S_CHAT_GLOBAL		=	3;
-	public static int S_CHAT_WHISPER	=	47;
-	public static int S_DISCONNECT		=	41;
-	public static int S_LOGINRESULT		=	63;
+	public const int S_VERSION			=	10;
+	public const int S_SERVER_MESSAGE	=	87;
+	public const int S_CHAR_AMOUNT		=	113;
+	public const int S_CHAR_PACKS		=	64;
+	public const int S_CHAT_NORMAL		=	8;
+	public const int S_CHAT_GLOBAL		=	105;
+	public const int S_CHAT_WHISPER		=	91;
+	public const int S_CHAT_SHOUT		=	42;
+	public const int S_DISCONNECT		=	18;
+	public const int S_LOGINRESULT		=	21;
+	public const int S_NEWS				=	90;
 
 
 }
