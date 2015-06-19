@@ -2,68 +2,99 @@
 using System.Collections;
 using System.Text;
 
-public class ServerPacketBase : MonoBehaviour {
+public class ServerPacketBase
+{
+	protected System.Byte[] _bytes;
+	protected int _length;
+	protected int _off;
+	protected int _opcode;
+	StringBuilder _packetString;
 
-	protected System.Byte[] rpckts;
-	protected int rpacket_length;
-	protected int rpckt_offset;
-	
-	protected byte get_byte()
+
+	public ServerPacketBase(byte[] data, int length)
 	{
-		return rpckts[rpckt_offset++];
+		_bytes = data;
+		_length = length;
+		_opcode = readByte();
 	}
+
 	
-	protected short get_short()
+	protected int readD()
 	{
-		short ret = 0;
-		ret = (short)(rpckts[rpckt_offset] |
-				rpckts[rpckt_offset+1]<<8);
-		rpckt_offset += 2;
-		return ret;
+		int i =	_bytes[_off] |
+				_bytes[_off+1]<<8 |
+				_bytes[_off+2]<<16 |
+				_bytes[_off+3]<<24;
+		_off += 4;
+		return i;
 	}
-	
-	protected ushort get_ushort()
+
+	protected int readC()
 	{
-		ushort ret = 0;
-		ret = (ushort)(rpckts[rpckt_offset] |
-				rpckts[rpckt_offset+1]<<8);
-		rpckt_offset += 2;
-		return ret;
+		int i = _bytes[_off++] & 0xff;
+		return i;
 	}
-	
-	protected int get_int()
+
+	protected int readH()
 	{
-		int ret = 0;
-		ret = rpckts[rpckt_offset] |
-				rpckts[rpckt_offset+1]<<8 |
-				rpckts[rpckt_offset+2]<<16 |
-				rpckts[rpckt_offset+3]<<24;
-		rpckt_offset += 4;
-		return ret;
+		int i = _bytes[_off++] & 0xff;
+		i |= _bytes[_off++] << 8 & 0xff00;
+		return i;
 	}
-	
-	protected uint get_uint()
+
+	protected int readCH()
 	{
-		uint ret = 0;
-		ret = (uint)(rpckts[rpckt_offset] |
-				rpckts[rpckt_offset+1]<<8 |
-				rpckts[rpckt_offset+2]<<16 |
-				rpckts[rpckt_offset+3]<<24);
-		rpckt_offset += 4;
-		return ret;
+		int i = _bytes[_off++] & 0xff;
+		i |= _bytes[_off++] << 8 & 0xff00;
+		i |= _bytes[_off++] << 16 & 0xff0000;
+		return i;
 	}
-	
-	protected string get_string()
+
+	protected double readF()
+	{
+		// long l = _bytes[_off++] & 0xff;
+		// l |= _bytes[_off++] << 8 & 0xff00;
+		// l |= _bytes[_off++] << 16 & 0xff0000;
+		// l |= _bytes[_off++] << 24 & 0xff000000;
+		// l |= (long) _bytes[_off++] << 32 & 0xff00000000L;
+		// l |= (long) _bytes[_off++] << 40 & 0xff0000000000L;
+		// l |= (long) _bytes[_off++] << 48 & 0xff000000000000L;
+		// l |= (long) _bytes[_off++] << 56 & 0xff00000000000000L;
+		// return Double.LongBitsToDouble(l);
+
+		return (double) 0;
+	}
+
+	protected string readS()
 	{
 		int i;
-		for (i = 0; rpckts[i+rpckt_offset] != 0; i++);
-		rpckt_offset += i+1;
-		return Encoding.UTF8.GetString(rpckts, rpckt_offset-i-1, i);
+		for(i = 0; _bytes[i+_off] != 0; i++);
+		_off += i+1;
+		return Encoding.UTF8.GetString(_bytes, _off-i-1, i);
+	}
+
+	protected byte readByte()
+	{
+		return _bytes[_off++];
+	}
+
+	protected ushort readUShort()
+	{
+		ushort ret = 0;
+		ret = (ushort)(_bytes[_off] |
+				_bytes[_off+1]<<8);
+		_off += 2;
+		return ret;
 	}
 	
-	public static byte S_CHAT_NORMAL = 8;
-	public static byte S_CHAT_GLOBAL = 105;
-	public static byte S_CHAT_SHOUT = 42;
-	public static byte S_CHAT_WHISPER = 91;
-	
+	protected uint readUInt()
+	{
+		uint ret = 0;
+		ret = (uint)(_bytes[_off] |
+				_bytes[_off+1]<<8 |
+				_bytes[_off+2]<<16 |
+				_bytes[_off+3]<<24);
+		_off += 4;
+		return ret;
+	}	
 }

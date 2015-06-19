@@ -4,71 +4,72 @@ using System.Collections;
 
 public class S_Chat : ServerPacketBase 
 {
-	public void process(byte[] data, int size)
+	NetCon _conn;
+
+	public S_Chat(NetCon conn, int opcode, byte[] data, int size) : base(data,size)
 	{
-		Text stuff;
-		Scrollbar scrl;
-		rpckts = data;
-		rpacket_length = size;
-		byte type;
-		string msg;
+		_conn = conn;
+
+		int type;
+		string message;
 		uint sender;
-		stuff = GameObject.Find("ChatText").GetComponent<Text>();
-		scrl = GameObject.Find("ChatScrollbar").GetComponent<Scrollbar>();
-		byte opcode = get_byte();
-		if (opcode == S_CHAT_NORMAL)
+
+		switch(opcode)
 		{
-			type = get_byte();
-			sender = get_uint();
-			msg = get_string();
-			stuff.text += "\n" + msg;
-			scrl.value = 0;
-		}
-		else if (opcode == S_CHAT_GLOBAL)
-		{
-			type = get_byte();
-			switch (type)
-			{
-				case 9:	//return from a command like .help
-					msg = get_string();
-					stuff.text += "\n" + msg;
-					scrl.value = 0;
-					break;
-				case 3:	//regular global chat
-					msg = get_string();
-					stuff.text += "\n" + msg;
-					scrl.value = 0;
-					break;
-				default:
-					break;
-			}
-		}
-		else if (opcode == S_CHAT_SHOUT)
-		{
-			short x, y;
-			type = get_byte();
-			sender = get_uint();
-			msg = get_string();
-			x = get_short();
-			y = get_short();
-			stuff.text += "\n?" + msg;
-			scrl.value = 0;
-		}
-		else if (opcode == S_CHAT_WHISPER)
-		{
-			string msg2;
-			msg = get_string();
-			msg2 = get_string();
-			stuff.text += "\n(" + msg + ") " + msg2;
-			scrl.value = 0;
-		}
-		else
-		{
-			type = get_byte();
-			sender = get_uint();
-			msg = get_string();
-			Debug.Log("Received chat TYPE:" + type + ", SENDER: " + sender + ", MSG: " + msg);
+			case OpCodes.S_CHAT_NORMAL:
+				type = readByte();
+				sender = readUInt();
+				message = readS();
+				displayChat(message, 0);
+				break;
+			
+			case OpCodes.S_CHAT_GLOBAL:
+				type = readByte();
+				switch (type)
+				{
+					case 9:	//return from a command like .help
+						message = readS();
+						break;
+					case 3:	//regular global chat
+						message = readS();
+						break;
+					default:
+						message = "";
+						break;
+				}
+				displayChat(message, 0);
+				break;
+
+			case OpCodes.S_CHAT_SHOUT:
+				int x, y;
+				type = readByte();
+				sender = readUInt();
+				message = readS();
+				x = readH();
+				y = readH();
+				displayChat("?"+message, 0);
+				break;
+
+			case OpCodes.S_CHAT_WHISPER:
+				string senderName;
+				senderName = readS();
+				message = readS();
+				displayChat("(" + senderName + ") " + message, 0);
+				break;
+
+			default:
+				type = readByte();
+				sender = readUInt();
+				message = readS();
+				Debug.Log("Received chat TYPE:" + type + ", SENDER: " + sender + ", MSG: " + message);
+				break;
 		}
 	}
-	
+
+	private void displayChat(string message, int scrollval)
+	{
+		ChatBox chat = _conn.getChatInterface();
+		chat.display(message, scrollval);
+	}
+
 }
