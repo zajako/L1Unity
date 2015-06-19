@@ -5,6 +5,7 @@ using System.ComponentModel;
 public class login : MonoBehaviour {
 	// Use this for initialization
 	public NetCon con;
+	public ChatBox chatInterface;
 	private BackgroundWorker _backgroundWorker;
 	bool worker_running;
 	
