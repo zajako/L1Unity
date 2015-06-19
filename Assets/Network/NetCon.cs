@@ -332,25 +332,6 @@ public class NetCon : MonoBehaviour {
 	{
 		send_packets.ReleaseMutex();
 	}
-		
-	public void chat_submit()
-	{
-		Debug.Log("Submitting chat " + inp.text);
-		switch(inp.text[0])
-		{
-			default:
-				{
-				send_packet(new C_Chat(inp.text));
-
-				// C_Chat temp = gameObject.AddComponent<C_Chat>();
-				// temp.send(inp.text);
-				// Destroy(temp);
-				}
-				break;
-		}
-		Debug.Log("Submitting chat " + inp.text);
-		inp.text = "";
-	}
 	
 	public void process_packet_contents()
 	{
@@ -361,13 +342,7 @@ public class NetCon : MonoBehaviour {
 			uint seed = get_uint();
 			init_key(seed);
 			Debug.Log("Received encryption seed");
-			reset();
-			add_byte(71);
-			add_short(0x33);
-			add_int(-1);
-			add_byte(32);
-			add_int(101101);
-			send_packet();
+			send_packet(new C_Version());
 		}
 		else
 		{
