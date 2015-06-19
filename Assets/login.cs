@@ -22,6 +22,7 @@ public class login : MonoBehaviour {
 		worker_running = true;
 		_backgroundWorker.RunWorkerAsync();
 		con.connect();
+		chatInterface = con.getChatInterface();
 	}
 	
 	// Update is called once per frame
