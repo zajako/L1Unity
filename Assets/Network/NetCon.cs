@@ -28,11 +28,6 @@ public class NetCon : MonoBehaviour {
 	System.Byte[] rcv_key;
 	System.Byte[] snd_key;
 	
-	string charname;
-	
-	int num_chars;
-	int chars_rcvd;
-
 	// Use this for initialization
 	void Start () {
 		Debug.Log("Starting EventListener");
@@ -407,28 +402,22 @@ public class NetCon : MonoBehaviour {
 		}
 
 
-		else if (opcode == 113)	//num char packet
-		{
-			num_chars = get_byte();
-			chars_rcvd = 0;
-			Debug.Log(num_chars + " chars total");
-		}
 		else if (opcode == 99)	//login char packet
 		{
 			int name_len = 0;
-			chars_rcvd++;
-			if (chars_rcvd == 1)
+			_chars_rcvd++;
+			if (_chars_rcvd == 1)
 			{
 				name_len = 0;
-				charname = get_string();
+				_char_name = get_string();
 			}
-			if (chars_rcvd == num_chars)
+			if (_chars_rcvd == _num_chars)
 			{
 				//send first character
-				Debug.Log("Logging in as ;" + charname + ";");
+				Debug.Log("Logging in as ;" + _char_name + ";");
 				reset();
 				add_byte(83);	//use char packet
-				add_string(charname);
+				add_string(_char_name);
 				add_int(0);
 				add_int(0);
 				send_packet();
@@ -493,15 +482,56 @@ public class NetCon : MonoBehaviour {
 	}
 
 
-	ChatBox _chatInterface;
+	ChatBox _chat_interface;
+
 	public ChatBox getChatInterface()
 	{
-		if(!_chatInterface)
+		if(!_chat_interface)
 		{
-			_chatInterface = gameObject.AddComponent<ChatBox>();
+			_chat_interface = gameObject.AddComponent<ChatBox>();
 		}
 
-		return _chatInterface;
+		return _chat_interface;
 	}
 
+	int _num_chars = 0;
+
+	public void setNumChars(int i)
+	{
+		_num_chars = i;
+	}
+
+	public int getNumChars()
+	{
+		return _num_chars;
+	}
+
+	int _chars_rcvd = 0;
+
+	public void addCharsRcvd(int i)
+	{
+		_chars_rcvd += i;
+	}
+
+	public void setCharsRcvd(int i)
+	{
+		_chars_rcvd = i;
+	}
+
+	public int getCharsRcvd()
+	{
+		return _chars_rcvd;
+	}
+
+	string _char_name = "";
+
+	public void setCharName(string name)
+	{
+		_char_name = name;
+	}
+
+	public string getCharName()
+	{
+		return _char_name;
+	}
 }

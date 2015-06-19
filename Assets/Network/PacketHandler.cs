@@ -20,7 +20,7 @@ public class PacketHandler
 				break;
 
 			case OpCodes.S_CHAR_AMOUNT:
-				// new S_CharAmount(data,length);
+				new S_CharAmount(conn, data,length);
 				break;
 
 			case OpCodes.S_CHAR_PACKS:
