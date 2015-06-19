@@ -10,13 +10,13 @@ public class S_LoginResult : ServerPacketBase
 
 	public S_LoginResult(NetCon conn, byte[] data, int size) : base(data,size)
 	{
+		int val = readByte();
+
+
+
+		Debug.Log("Received login result: "+val);
+
 		
-
-
-
-		Debug.Log("Received login result");
-
-		byte val = readByte();
 		switch (val)
 		{
 			case REASON_OK:
