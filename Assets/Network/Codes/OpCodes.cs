@@ -13,13 +13,15 @@ static class OpCodes
 	public const int C_CHAT_WHISPER		=	13;
 	public const int C_CHAT_GLOBAL		=	40;
 	public const int C_MENUCLICK		= 	43;
+	public const int C_LOGINTOSERVER	=	83;
+	public const int C_KEEPALIVE		=	57;
+	public const int C_LOGINOK			=	92; 
 
 
 	//Incoming AKA Server Packets		SERVER => Client
 	public const int S_VERSION			=	10;
 	public const int S_SERVER_MESSAGE	=	87;
 	public const int S_CHAR_AMOUNT		=	113;
-	public const int S_CHAR_PACKS		=	64;
 	public const int S_CHAT_NORMAL		=	8;
 	public const int S_CHAT_GLOBAL		=	105;
 	public const int S_CHAT_WHISPER		=	91;
@@ -27,6 +29,8 @@ static class OpCodes
 	public const int S_DISCONNECT		=	18;
 	public const int S_LOGINRESULT		=	21;
 	public const int S_NEWS				=	90;
+	public const int S_CHAR_LIST		=	99;
+	public const int S_GAMELOGIN		=	63;
 
 
 }

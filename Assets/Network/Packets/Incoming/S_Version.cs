@@ -10,6 +10,6 @@ public class S_Version : ServerPacketBase
 		//Should trigger the login screen to display here
 
 		//Until login screen is being displayed
-		conn.login_packet();
+		conn.send_packet(new C_AuthLogin("stupid","stupid"));
 	}
 }

@@ -332,38 +332,7 @@ public class NetCon : MonoBehaviour {
 	{
 		send_packets.ReleaseMutex();
 	}
-	
-	public void login_packet()
-	{
-		reset();
-		add_byte(12);	//login packet
-		add_string("stupid");
-		add_string("stupid");
-		send_packet();
-	}
-	
-	public void login_check()
-	{
-		byte val = get_byte();
-		switch (val)
-		{
-			case 3:
-				reset();
-				add_byte(57);	//alive packet
-				add_int(0);
-				add_int(0);
-				send_packet();
-				reset();
-				add_byte(92);	//init game
-				add_int(0);
-				add_int(0);
-				send_packet();
-				break;
-			default:
-				break;
-		}
-	}
-	
+		
 	public void chat_submit()
 	{
 		Debug.Log("Submitting chat " + inp.text);
@@ -400,30 +369,6 @@ public class NetCon : MonoBehaviour {
 			add_int(101101);
 			send_packet();
 		}
-
-
-		else if (opcode == 99)	//login char packet
-		{
-			int name_len = 0;
-			_chars_rcvd++;
-			if (_chars_rcvd == 1)
-			{
-				name_len = 0;
-				_char_name = get_string();
-			}
-			if (_chars_rcvd == _num_chars)
-			{
-				//send first character
-				Debug.Log("Logging in as ;" + _char_name + ";");
-				reset();
-				add_byte(83);	//use char packet
-				add_string(_char_name);
-				add_int(0);
-				add_int(0);
-				send_packet();
-			}
-		}
-
 		else
 		{
 			new PacketHandler(this, opcode, rpckts, rpacket_length);

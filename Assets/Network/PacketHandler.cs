@@ -23,8 +23,8 @@ public class PacketHandler
 				new S_CharAmount(conn, data,length);
 				break;
 
-			case OpCodes.S_CHAR_PACKS:
-				// new S_CharPacks(data, length);
+			case OpCodes.S_CHAR_LIST:
+				new S_CharList(conn, data, length);
 				break;
 
 			case OpCodes.S_CHAT_NORMAL:
@@ -40,14 +40,15 @@ public class PacketHandler
 				break;
 
 			case OpCodes.S_LOGINRESULT:
-				//Until login result packet is made
-				conn.login_check();
-
-				//new S_LoginResult(data, length);
+				new S_LoginResult(conn, data, length);
 				break;
 
 			case OpCodes.S_NEWS:
 				new S_News(conn, data, length);
+				break;
+
+			case OpCodes.S_GAMELOGIN:
+				new S_GameLogin(data, length);
 				break;
 
 			default:
