@@ -30,6 +30,7 @@ public class NetCon : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
+		DontDestroyOnLoad(this);
 		Debug.Log("Starting EventListener");
 		rpckt_offset = 0;
 		rpckts = new System.Byte[65536];
