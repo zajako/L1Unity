@@ -4,6 +4,12 @@
 Temp/
 Library/
 
+# =============== #
+# Art Assets #
+# =============== #
+Assets/Art/png/*
+Assets/Art/img/*
+
 # ===================================== #
 # Visual Studio / MonoDevelop generated #
 # ===================================== #

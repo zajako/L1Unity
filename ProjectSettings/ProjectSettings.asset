@@ -19,8 +19,8 @@ PlayerSettings:
   m_ShowUnitySplashScreen: 1
   defaultScreenWidth: 640
   defaultScreenHeight: 480
-  defaultScreenWidthWeb: 960
-  defaultScreenHeightWeb: 600
+  defaultScreenWidthWeb: 640
+  defaultScreenHeightWeb: 480
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
   m_ActiveColorSpace: 0
@@ -256,7 +256,8 @@ PlayerSettings:
   psp2InfoBarColor: 0
   psmSplashimage: {fileID: 0}
   spritePackerPolicy: 
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    4: loginvars
   metroPackageName: L1Unity
   metroPackageLogo: 
   metroPackageLogo140: 
