@@ -145,7 +145,7 @@ MonoBehaviour:
   m_Script: {fileID: -619905303, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_FirstSelected: {fileID: 0}
+  m_FirstSelected: {fileID: 736080169}
   m_sendNavigationEvents: 1
   m_DragThreshold: 5
 --- !u!4 &143235977
