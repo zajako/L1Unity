@@ -106,9 +106,6 @@ public class opening : MonoBehaviour {
 		{
 			_delay += 1;
 		}
-
-
-		
 	}
 	
 	public void something()
