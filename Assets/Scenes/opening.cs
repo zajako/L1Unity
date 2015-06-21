@@ -2,25 +2,29 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.ComponentModel;
 
 public class opening : MonoBehaviour {
 
 	EventSystem system;
-
 	Image _bg;
 	Sprite[] _bgFrames;
 	int _currentFrame;
 	int _lastFrame;
 	int _delay = 0;
-	
+	NetCon _con;
+	LoginVars _loginVars;
+
+	bool loginstarted = false;
+
 	// Use this for initialization
 	void Awake () {
 		Debug.Log("Startup screen");
 		system = EventSystem.current;
-
-
 		_bg = GameObject.Find("Background").GetComponent<Image>();
 		_bgFrames = Sprites.getInstance().getPngRange(1825,18);
+		_loginVars = GameObject.Find("loginvars").GetComponent<LoginVars>();
+		_con = Object.FindObjectOfType<NetCon>();
 	}
 	
 	// Update is called once per frame
@@ -49,10 +53,19 @@ public class opening : MonoBehaviour {
 					inputfield.OnPointerClick(new PointerEventData(system));  //if it's an input field, also set the text caret
 				system.SetSelectedGameObject(next.gameObject, new BaseEventData(system));
 			}
-
 		}
 
-		
+		if(loginstarted)
+		{
+			switch(_loginVars.getResult())
+			{
+				case 0:
+					_con.send_packet(new C_LoginOK());
+					Application.LoadLevel("char_select");
+				break;
+			}
+			
+		}
 
 
 	}
@@ -62,8 +75,6 @@ public class opening : MonoBehaviour {
 
 		animateBG();
 		
-		
-
 		InputField login = GameObject.Find("Login").GetComponent<InputField>();
 		InputField password = GameObject.Find("Password").GetComponent<InputField>();
 
@@ -102,16 +113,27 @@ public class opening : MonoBehaviour {
 	
 	public void something()
 	{
+		if(!loginstarted)
+		{
+			loginstarted = true;
+			InputField login = GameObject.Find("Login").GetComponent<InputField>();
+			InputField password = GameObject.Find("Password").GetComponent<InputField>();
+
+			
+
+			_loginVars.setValues(login.text,password.text);
+			Debug.Log("Login Button Pressed U:" + login.text + " P:"+password.text);
+
+			_con.send_packet(new C_AuthLogin(_loginVars.getLogin(),_loginVars.getPassword()));
+
+
+			// 
+		}
+
 		
-		InputField login = GameObject.Find("Login").GetComponent<InputField>();
-		InputField password = GameObject.Find("Password").GetComponent<InputField>();
-
-
-		LoginVars loginVars = GameObject.Find("loginvars").GetComponent<LoginVars>();
-
-		loginVars.setValues(login.text,password.text);
-		Debug.Log("Login Button Pressed U:" + login.text + " P:"+password.text);
-
-		Application.LoadLevel("login");
 	}
+
+
+	// 
+
 }

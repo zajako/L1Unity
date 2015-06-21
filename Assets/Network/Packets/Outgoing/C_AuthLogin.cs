@@ -13,5 +13,7 @@ public class C_AuthLogin : ClientPacketBase
 		writeC(OpCodes.C_AUTH_LOGIN);
 		writeS(login);
 		writeS(password);
+
+		Debug.Log("authlogin packet sent.");
 	}
 }

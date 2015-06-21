@@ -6,6 +6,7 @@ public class LoginVars : MonoBehaviour {
 
 	public string _login;
 	public string _password;
+	public int _loginResult = -1;
 
 	public void Awake()
 	{
@@ -32,5 +33,16 @@ public class LoginVars : MonoBehaviour {
 	public void clearPassword()
 	{
 		_password = "";
+	}
+
+	public void setResult(int i)
+	{
+		_loginResult = i;
+		Debug.Log("Result set to "+i);
+	}
+
+	public int getResult()
+	{
+		return _loginResult;
 	}
 }

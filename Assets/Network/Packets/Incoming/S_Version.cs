@@ -10,8 +10,5 @@ public class S_Version : ServerPacketBase
 		//Should trigger the login screen to display here
 
 		//Until login screen is being displayed
-		LoginVars loginVars = GameObject.Find("loginvars").GetComponent<LoginVars>();
-
-		conn.send_packet(new C_AuthLogin(loginVars.getLogin(),loginVars.getPassword()));
 	}
 }

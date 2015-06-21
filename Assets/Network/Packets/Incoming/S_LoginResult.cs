@@ -17,10 +17,13 @@ public class S_LoginResult : ServerPacketBase
 		Debug.Log("Received login result: "+val);
 
 		
+		LoginVars loginVars = GameObject.Find("loginvars").GetComponent<LoginVars>();
+		loginVars.setResult(val);
+
 		switch (val)
 		{
 			case REASON_OK:
-				conn.send_packet(new C_LoginOK());
+				
 				break;
 			case REASON_INUSE:
 				//display an account already in use error

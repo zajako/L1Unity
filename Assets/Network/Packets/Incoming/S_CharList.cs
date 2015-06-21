@@ -17,7 +17,7 @@ public class S_CharList : ServerPacketBase
 			Debug.Log("Logging in as ;" + conn.getCharName() + ";");
 
 			//send C_LoginToServer Packet
-			conn.send_packet(new C_LoginToServer(conn.getCharName()));
+			// conn.send_packet(new C_LoginToServer(conn.getCharName()));
 		}
 		//End Temporary Code
 

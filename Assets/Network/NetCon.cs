@@ -8,7 +8,8 @@ using System.Text;
 using System.Threading;
 using System;
 using System.IO;
-
+using UnityEngine.EventSystems;
+using System.ComponentModel;
 
 public class NetCon : MonoBehaviour {
 	public Rigidbody player;
@@ -27,11 +28,52 @@ public class NetCon : MonoBehaviour {
 	bool has_key;
 	System.Byte[] rcv_key;
 	System.Byte[] snd_key;
-	
-	// Use this for initialization
-	void Start () {
-		DontDestroyOnLoad(this);
-		Debug.Log("Starting EventListener");
+
+	public static NetCon _instance;
+
+	public static NetCon instance
+    {
+        get
+        {
+            if(_instance == null)
+            {
+                _instance = GameObject.FindObjectOfType<NetCon>();
+ 
+                //Tell unity not to destroy this object when loading a new scene!
+                DontDestroyOnLoad(_instance.gameObject);
+            }
+ 
+            return _instance;
+        }
+    }
+ 
+
+	private BackgroundWorker _backgroundWorker;
+	bool worker_running;
+
+	void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+	{
+		read_packet();
+		worker_running = false;
+	}
+
+	public void Awake()
+	{
+		if(_instance == null)
+        {
+            //If I am the first instance, make me the Singleton
+            _instance = this;
+            DontDestroyOnLoad(this);
+        }
+        else
+        {
+            //If a Singleton already exists and you find
+            //another reference in scene, destroy it!
+            if(this != _instance)
+                Destroy(this.gameObject);
+        }
+
+        Debug.Log("Starting EventListener");
 		rpckt_offset = 0;
 		rpckts = new System.Byte[65536];
 		spckts = new System.Byte[65536];
@@ -40,6 +82,14 @@ public class NetCon : MonoBehaviour {
 		snd_key = new System.Byte[8];
 		send_packets = new Mutex();
 		rcv_packets = new Mutex(true);
+
+		
+
+		_backgroundWorker = new BackgroundWorker();
+		_backgroundWorker.DoWork += backgroundWorker_DoWork;
+		worker_running = true;
+		_backgroundWorker.RunWorkerAsync();
+		connect();
 	}
 	
 	public static string ByteArrayToString(byte[] ba, int packet_length)
@@ -400,6 +450,12 @@ public class NetCon : MonoBehaviour {
 	}
 
 	void Update () {
+		if(!worker_running && !_backgroundWorker.IsBusy)
+		{
+			process_packet_contents();
+			worker_running = true;
+			_backgroundWorker.RunWorkerAsync();
+		}
 	}
 
 
@@ -455,4 +511,8 @@ public class NetCon : MonoBehaviour {
 	{
 		return _char_name;
 	}
+
+	void OnApplicationQuit() {
+		disconnect();
+    }
 }
