@@ -6,11 +6,21 @@ using UnityEngine.EventSystems;
 public class opening : MonoBehaviour {
 
 	EventSystem system;
+
+	Image _bg;
+	Sprite[] _bgFrames;
+	int _currentFrame;
+	int _lastFrame;
+	int _delay = 0;
 	
 	// Use this for initialization
-	void Start () {
+	void Awake () {
 		Debug.Log("Startup screen");
 		system = EventSystem.current;
+
+
+		_bg = GameObject.Find("Background").GetComponent<Image>();
+		_bgFrames = Sprites.getInstance().getPngRange(1825,18);
 	}
 	
 	// Update is called once per frame
@@ -39,11 +49,21 @@ public class opening : MonoBehaviour {
 					inputfield.OnPointerClick(new PointerEventData(system));  //if it's an input field, also set the text caret
 				system.SetSelectedGameObject(next.gameObject, new BaseEventData(system));
 			}
+
 		}
+
+		
+
+
 	}
 
 	public void OnGUI()
 	{
+
+		animateBG();
+		
+		
+
 		InputField login = GameObject.Find("Login").GetComponent<InputField>();
 		InputField password = GameObject.Find("Password").GetComponent<InputField>();
 
@@ -56,6 +76,28 @@ public class opening : MonoBehaviour {
 		{
  			something();
 		}
+	}
+
+	private void animateBG()
+	{
+		if(_delay >= 10)
+		{
+			if(_currentFrame >= (_bgFrames.Length - 1))
+				_currentFrame = 0;
+			else
+				_currentFrame += 1;
+
+			_bg.sprite = _bgFrames[_currentFrame];
+
+			_delay = 0;
+		}
+		else
+		{
+			_delay += 1;
+		}
+
+
+		
 	}
 	
 	public void something()
