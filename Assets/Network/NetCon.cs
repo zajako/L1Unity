@@ -512,7 +512,8 @@ public class NetCon : MonoBehaviour {
 		return _char_name;
 	}
 
-	void OnApplicationQuit() {
+	void OnApplicationQuit()
+	{
 		disconnect();
     }
 }

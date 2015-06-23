@@ -89,4 +89,26 @@ public class Sprites
 
 		return range;
 	}
+
+	public static Sprite RemoveColor(Color c, Sprite imgs)
+	{
+        Color[] pixels = imgs.texture.GetPixels(0, 0, imgs.texture.width, imgs.texture.height, 0);
+      
+        for(int p = 0; p < pixels.Length; p++)
+            {
+                if(pixels[p] == c)
+               // pixels[p] = new Color(0,0,0,0);
+                pixels[p] = Color.clear;
+            }        
+ 
+        imgs.texture.SetPixels(0, 0, imgs.texture.width, imgs.texture.height, pixels, 0);
+        imgs.texture.Apply ();
+        return imgs;
+	}
+
+	public static Sprite RemoveBlack(Sprite img)
+	{
+
+		return RemoveColor(Color.black,img);
+	}
 }

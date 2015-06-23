@@ -20,5 +20,10 @@ static class CharTypes
 	public const int T_DEL_DKNIGHT	=	37;
 	public const int T_DEL_ILL		=	38;
 
+	public const int S_MALE			=	0;
+	public const int S_FEMALE		=	1;
+
+
+
 
 }

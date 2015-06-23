@@ -20,20 +20,20 @@ public class S_LoginResult : ServerPacketBase
 		LoginVars loginVars = GameObject.Find("loginvars").GetComponent<LoginVars>();
 		loginVars.setResult(val);
 
-		switch (val)
-		{
-			case REASON_OK:
+		// switch (val)
+		// {
+		// 	case REASON_OK:
 				
-				break;
-			case REASON_INUSE:
-				//display an account already in use error
-				break;
-			case REASON_FAILED:
-				//display a wrong username or password error
-				break;
-			default:
-				break;
-		}
+		// 		break;
+		// 	case REASON_INUSE:
+		// 		//display an account already in use error
+		// 		break;
+		// 	case REASON_FAILED:
+		// 		//display a wrong username or password error
+		// 		break;
+		// 	default:
+		// 		break;
+		// }
 
 	}
 }

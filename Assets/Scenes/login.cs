@@ -4,38 +4,25 @@ using System.ComponentModel;
 
 public class login : MonoBehaviour {
 	// Use this for initialization
-	public NetCon con;
-	public ChatBox chatInterface;
-	private BackgroundWorker _backgroundWorker;
-	bool worker_running;
-	
-	void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
-	{
-		con.read_packet();
-		worker_running = false;
-	}
-	
-	void Start () {
+	NetCon _con;
+	LoginVars _loginVars;
+	ChatBox _chatInterface;
+
+	void Awake () {
 		Debug.Log ("Login screen, attempting to login");
-		_backgroundWorker = new BackgroundWorker();
-		_backgroundWorker.DoWork += backgroundWorker_DoWork;
-		worker_running = true;
-		_backgroundWorker.RunWorkerAsync();
-		con.connect();
-		chatInterface = con.getChatInterface();
+
+		_loginVars = GameObject.Find("loginvars").GetComponent<LoginVars>();
+		_con = Object.FindObjectOfType<NetCon>();
+
+		_chatInterface = _con.getChatInterface();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if (!worker_running && !_backgroundWorker.IsBusy)
-		{
-			con.process_packet_contents();
-			worker_running = true;
-			_backgroundWorker.RunWorkerAsync();
-		}
+
 	}
 	
 	void OnApplicationQuit() {
-		con.disconnect();
+
     }
 }

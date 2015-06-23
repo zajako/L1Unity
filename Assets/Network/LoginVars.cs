@@ -7,14 +7,8 @@ public class LoginVars : MonoBehaviour {
 	public string _login;
 	public string _password;
 	public int _loginResult = -1;
-	public CharList _char1;
-	public CharList _char2;
-	public CharList _char3;
-	public CharList _char4;
-	public CharList _char5;
-	public CharList _char6;
-	public CharList _char7;
-	public CharList _char8;
+	public CharList[] _char = { null,null,null,null,null,null,null,null };
+
 
 	public void Awake()
 	{
@@ -54,33 +48,36 @@ public class LoginVars : MonoBehaviour {
 		return _loginResult;
 	}
 
-	public void setChar1(CharList c)
+	public void setChar(int i, CharList c)
 	{
-		_char1 = c;
+		_char[i] = c;
 	}
 
-	public CharList getChar1()
+	public CharList getChar(int i)
 	{
-		return _char1;
+		return _char[i];
 	}
 
-	public void setChar2(CharList c)
-	{
-		_char2 = c;
-	}
-
-	public CharList getChar2()
-	{
-		return _char2;
-	}
 
 
 	public void addChar(CharList c)
 	{
-		if(_char1 == null)
-			setChar1(c);
-		else if(_char2 == null)
-			setChar2(c);
+		if(_char[0] == null)
+			setChar(0,c);
+		else if(_char[1] == null)
+			setChar(1,c);
+		else if(_char[2] == null)
+			setChar(2,c);
+		else if(_char[3] == null)
+			setChar(3,c);
+		else if(_char[4] == null)
+			setChar(4,c);
+		else if(_char[5] == null)
+			setChar(5,c);
+		else if(_char[6] == null)
+			setChar(6,c);
+		else if(_char[7] == null)
+			setChar(7,c);
 	}
 
 
