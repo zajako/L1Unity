@@ -7,8 +7,8 @@ Library/
 # =============== #
 # Art Assets #
 # =============== #
-Assets/Resources/png/*
-Assets/Resources/img/*
+Assets/Resources/png/*.png
+Assets/Resources/img/*.png
 
 # ===================================== #
 # Visual Studio / MonoDevelop generated #
