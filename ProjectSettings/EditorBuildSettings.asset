@@ -11,3 +11,5 @@ EditorBuildSettings:
     path: Assets/Scenes/login.unity
   - enabled: 1
     path: Assets/Scenes/char_select.unity
+  - enabled: 1
+    path: Assets/Scenes/new_char.unity

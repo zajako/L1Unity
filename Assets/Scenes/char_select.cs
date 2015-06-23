@@ -123,7 +123,29 @@ public class char_select : MonoBehaviour
 				_doorFrames[1] = _doorAni[1].getFrames();
 				idleDoor(1);
 			}
-		}		
+		}
+		if(!_charSet[2])
+		{
+			if(_loginVars.getChar(2) != null)
+			{
+				_charSet[2] = true;
+				
+				_doorAni[2] = new CharSelAnimation(_loginVars.getChar(2).getType(), _loginVars.getChar(2).getSex());
+				_doorFrames[2] = _doorAni[2].getFrames();
+				idleDoor(2);
+			}
+		}
+		if(!_charSet[3])
+		{
+			if(_loginVars.getChar(3) != null)
+			{
+				_charSet[3] = true;
+				
+				_doorAni[3] = new CharSelAnimation(_loginVars.getChar(3).getType(), _loginVars.getChar(3).getSex());
+				_doorFrames[3] = _doorAni[3].getFrames();
+				idleDoor(3);
+			}
+		}
 	}
 
 	public void OnGUI()
@@ -258,6 +280,7 @@ public class char_select : MonoBehaviour
 		else
 		{
 			Debug.Log("Goto New Character Page");
+			Application.LoadLevel("new_char");
 		}
 	}
 
