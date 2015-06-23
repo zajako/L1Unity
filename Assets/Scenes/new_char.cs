@@ -1,6 +1,9 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System.Xml;
+using System;
+using System.ComponentModel;
 
 public class new_char : MonoBehaviour
 {
@@ -12,6 +15,10 @@ public class new_char : MonoBehaviour
 	int _delay = 0;
 	int _gender = 0;
 	int _class = 0;
+
+	string _text;
+	float _off;
+	float _scrollSpeed = 100;
 
 	Image _character;
 	Sprite[] _charFrames;
@@ -28,6 +35,8 @@ public class new_char : MonoBehaviour
 	Button _knight;
 	Button _mage;
 	Button _dragonknight;
+
+	Text _window;
 
 
 	void Awake()
@@ -51,6 +60,12 @@ public class new_char : MonoBehaviour
 		_knight = GameObject.Find("Knight").GetComponent<Button>();
 		_mage = GameObject.Find("Mage").GetComponent<Button>();
 		_dragonknight = GameObject.Find("DragonKnight").GetComponent<Button>();
+
+
+		_window = GameObject.Find("TextWindow").GetComponent<Text>();
+		_text = getTextFromXml(0,-1);
+
+		_window.text = _text;
 
 		_okay.onClick.AddListener(() => {
 			Debug.Log("Okay Button Pressed, trigger error handling");
@@ -129,11 +144,15 @@ public class new_char : MonoBehaviour
 		_delay = 0;
 		_charAni = new CharSelAnimation(_class, _gender);
 		_charFrames = _charAni.getFrames();
+		_text = getTextFromXml(cid,-1);
+		_window.text = _text;
 	}
+
+	float scrollSpeed = 1;
 
 	public void OnGUI()
 	{
-		
+
 	}
 
 
@@ -141,7 +160,7 @@ public class new_char : MonoBehaviour
 	{
 		if(_delay >= 3)
 		{
-			Debug.Log("Animating Delay:"+_delay+" Current Frame:"+_currentFrame+"/"+_charFrames.Length);
+			//Debug.Log("Animating Delay:"+_delay+" Current Frame:"+_currentFrame+"/"+_charFrames.Length);
 			
 			if(_currentFrame >= (_charFrames.Length - 1))
 				_currentFrame = 0;
@@ -157,6 +176,28 @@ public class new_char : MonoBehaviour
 		{
 			_delay += 1;
 		}
+	}
+
+	private string getTextFromXml(int classid, int statid)
+	{
+		TextAsset textAsset = (TextAsset)Resources.Load("data/ani/xml/classdesc");  
+		XmlDocument xmldoc = new XmlDocument();
+		xmldoc.LoadXml(textAsset.text);
+		foreach (XmlNode node in xmldoc.SelectNodes("classinfos/en/desc"))
+		{
+			int check_class = Convert.ToInt16(node.Attributes.GetNamedItem("class").Value);
+			int check_stat = Convert.ToInt16(node.Attributes.GetNamedItem("stat").Value);
+
+			if(check_class == classid)
+			{
+				if(check_stat == statid)
+				{
+					return node.InnerText;
+				}
+			}
+		}
+
+		return "";
 	}
 
 
