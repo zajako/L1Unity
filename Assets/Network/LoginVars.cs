@@ -16,6 +16,14 @@ public class LoginVars : MonoBehaviour {
 		DontDestroyOnLoad(this);
 	}
 
+	public void reset()
+	{
+		_login = "";
+		_password = "";
+		_loginResult = -1;
+		_char = new CharList[]{ null,null,null,null,null,null,null,null };
+	}
+
 	public void setValues(string login, string password)
 	{
 		_login = login;
@@ -58,8 +66,6 @@ public class LoginVars : MonoBehaviour {
 		return _char[i];
 	}
 
-
-
 	public void addChar(CharList c)
 	{
 		if(_char[0] == null)
@@ -79,9 +85,6 @@ public class LoginVars : MonoBehaviour {
 		else if(_char[7] == null)
 			setChar(7,c);
 	}
-
-
-
 
 
 

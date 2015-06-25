@@ -88,6 +88,8 @@ public class char_select : MonoBehaviour
 
 			//TODO send logout packet
 
+			_con.send_packet(new C_Logout());
+			_loginVars.reset();
 			Application.LoadLevel("opening");
 		});
 

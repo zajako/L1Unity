@@ -16,6 +16,7 @@ static class OpCodes
 	public const int C_LOGINTOSERVER	=	83;
 	public const int C_KEEPALIVE		=	57;
 	public const int C_LOGINOK			=	92; 
+	public const int C_LOGOUT			=	8;
 
 
 	//Incoming AKA Server Packets		SERVER => Client

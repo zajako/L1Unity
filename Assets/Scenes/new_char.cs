@@ -17,8 +17,6 @@ public class new_char : MonoBehaviour
 	int _class = 0;
 
 	string _text;
-	float _off;
-	float _scrollSpeed = 100;
 
 	Image _character;
 	Sprite[] _charFrames;
@@ -147,8 +145,6 @@ public class new_char : MonoBehaviour
 		_text = getTextFromXml(cid,-1);
 		_window.text = _text;
 	}
-
-	float scrollSpeed = 1;
 
 	public void OnGUI()
 	{
